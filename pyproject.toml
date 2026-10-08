@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trustdoc-ai"
+version = "0.1.0"
+description = "Evidence-grounded software documentation generation, verification and hallucination detection (hybrid RAG)."
+readme = "README.md"
+requires-python = ">=3.10"
+# Part 1 is standard-library only. Heavy dependencies are optional extras so
+# that each later part installs only what it needs.
+dependencies = []
+
+[project.optional-dependencies]
+pdf = ["PyMuPDF>=1.24"]                       # Part 2 (ingestion)
+retrieval = [                                  # Parts 4-5 (retrieval pipeline)
+    "sentence-transformers>=3.0",
+    "faiss-cpu>=1.8",
+    "rank_bm25>=0.2.2",
+]
+ui = ["streamlit>=1.36"]                       # Part 8 (UI)
+dev = ["pytest>=8.0", "pytest-cov>=5.0"]
+all = ["trustdoc-ai[pdf,retrieval,ui,dev]"]
+
+[project.scripts]
+trustdoc = "trustdoc.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["trustdoc*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+    "unit: fast, isolated tests",
+    "integration: tests that touch SQLite or the filesystem",
+]

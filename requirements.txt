@@ -1,0 +1,4 @@
+# Part 1 needs only the standard library plus the test tools.
+# Install the project in editable mode with dev extras:
+-e .[dev]
+# Later parts add extras: .[pdf], .[retrieval], .[ui]  (or .[all])
