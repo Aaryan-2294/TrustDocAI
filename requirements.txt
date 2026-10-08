@@ -1,4 +1,4 @@
-# Part 1 needs only the standard library plus the test tools.
+# Part 1 is stdlib-only; Part 2 adds PyMuPDF (optional extra "pdf") for PDF ingestion.
 # Install the project in editable mode with dev extras:
--e .[dev]
-# Later parts add extras: .[pdf], .[retrieval], .[ui]  (or .[all])
+-e .[dev,pdf]
+# Later parts add extras: .[retrieval], .[ui]  (or .[all])
