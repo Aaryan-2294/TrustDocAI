@@ -4,8 +4,8 @@
 
 > Every documentation claim should be supported by evidence.
 
-This repository is built in 8 sequential parts. **Current status: Part 3 - Knowledge Base & Hybrid Retrieval**
-(on top of Part 1 foundation and Part 2 ingestion). No LLM calls, Ask/Generate/Verify workflows, Trust Score or UI exist yet.
+This repository is built in 8 sequential parts. **Current status: Part 4 - RAG Ask + Grounded Generation**
+(on top of Part 1 foundation, Part 2 ingestion and Part 3 retrieval). Generate/Verify workflows, claim verification, the Trust Score and the Streamlit UI do not exist yet.
 
 ## Setup
 
@@ -60,7 +60,10 @@ trustdoc/
                      threshold.py, embedding.py, faiss_index.py, bm25_index.py, reranker.py,
                      index_manager.py (build/load/staleness), retriever.py (the facade), factory.py
   evaluation/        dataset.py, metrics.py, runner.py + data/ (sample project, queries.json)
-examples/            retrieval_demo.py
+  llm/               base.py (LLMBackend, GenerationResult), ollama.py, hf_transformers.py,
+                     stub.py (extractive stand-in), factory.py (create_llm, register_backend)
+  workflows/         ask.py (AskService), prompts.py, citations.py, types.py, render.py
+examples/            retrieval_demo.py, ask_demo.py
 evaluation_results/  saved evaluation runs (see its README)
 tests/               pytest suite
 data/                runtime data (gitignored): trustdoc.db, uploads/, logs/
@@ -76,6 +79,8 @@ cli / (future Streamlit UI)
  IngestionService ---> parsing/ + chunking/ (pure)      UploadStore (data/uploads)
         |                                                   
  Retriever ---> IndexManager (FAISS + BM25 in data/indexes) -> RRF -> Cross-Encoder -> Evidence
+        |
+ AskService ---> Retriever -> grounded prompt -> LLMBackend (Ollama | Transformers) -> checked citations
         |
         |
    Database.session()  -- one transaction per `with` block (commit / rollback)
@@ -402,25 +407,190 @@ cleanly separate keyword from semantic retrieval. The run saved in `evaluation_r
 used lexical stand-ins and is **not** a measurement of the real models. Results for the real models appear
 only after you run the first command above on a machine that can download them.
 
+## Ask workflow (Part 4)
+
+`AskService.ask(project_id, question)` answers a question about an ingested project **using only retrieved
+evidence**, cites that evidence, and abstains when the evidence is insufficient. It orchestrates; it does
+not implement retrieval (Part 3) or text generation (the `llm` package).
+
+### Pipeline
+
+```
+question -> validate (non-empty, within length limit, project exists)
+         -> Retriever.search(project, question, top_k)            [Part 3: BM25 + FAISS + RRF + Cross-Encoder + threshold]
+         -> retrieval abstained / no usable evidence?  --yes-->  "insufficient evidence" (LLM NOT called)
+         -> build grounded prompt: system rules + question + fenced evidence blocks [E1]..[En]
+         -> LLMBackend.generate(...)                              [Ollama | Transformers | stub]
+         -> model replied INSUFFICIENT_EVIDENCE?        --yes-->  "insufficient evidence" (evidence kept)
+         -> check citation IDs against the evidence actually shown -> AskResult
+```
+
+`AskResult.status` is `answered`, `insufficient_evidence`, `retrieval_error` or `generation_error`. Failures
+never produce a made-up answer, and the retrieved evidence is kept on the result either way so Part 5 can
+verify claims independently. Unknown projects and empty/over-long questions raise (`NotFoundError`,
+`InvalidQuestionError`); questions are never truncated.
+
+### Choosing and configuring a local LLM (no paid API, no key)
+
+Nothing is downloaded at startup. The default is `TRUSTDOC_LLM_PROVIDER=none`: `ask` can still report
+"insufficient evidence", but needs a model to generate answers. Embedding models and Cross-Encoders are not
+generative and are never used for answers.
+
+| Provider | What it is | Extra Python deps | When to use |
+|---|---|---|---|
+| `ollama` (recommended) | A local [Ollama](https://ollama.com) server over HTTP | none (stdlib) | Easiest on a laptop CPU; models are managed by Ollama |
+| `transformers` | Hugging Face model loaded in-process | `torch`, `transformers` (already pulled in by the `retrieval` extra) | No separate server wanted |
+| `stub` | Deterministic extractive stand-in, **not a language model** | none | Smoke tests and demos only |
+
+**Ollama (recommended).** Install Ollama, then:
+
+```bash
+ollama pull qwen2.5:1.5b            # example small model; check the Ollama library for current names/sizes
+export TRUSTDOC_LLM_PROVIDER=ollama
+export TRUSTDOC_LLM_MODEL=qwen2.5:1.5b
+# optional: TRUSTDOC_LLM_BASE_URL=http://localhost:11434 (default), TRUSTDOC_LLM_TIMEOUT_SECONDS=300
+```
+
+**Transformers (alternative).**
+
+```bash
+export TRUSTDOC_LLM_PROVIDER=transformers
+export TRUSTDOC_LLM_MODEL=<an instruction-tuned chat model id from Hugging Face>
+```
+
+The model downloads on first use if it is not cached (set `HF_HUB_OFFLINE=1` to forbid downloads).
+
+**Resource expectations (rough estimates, not benchmarks).** Memory is roughly *parameters x bytes per weight*:
+Ollama models are usually quantised (commonly ~4-bit, about 0.5 byte/parameter, so a 1.5B-parameter model is on
+the order of 1 GB on disk and in RAM plus overhead); the in-process Transformers backend loads the library's
+default precision (float32 on CPU, ~4 bytes/parameter, so a 1.5B model needs on the order of 6 GB RAM). Disk use
+equals the model files. CPU generation is slow: expect seconds to minutes per answer depending on model size,
+prompt length (default evidence budget is ~6,000 characters) and your CPU. These figures have not been measured
+here; do not assume a large model will run comfortably on an ordinary CPU. `TRUSTDOC_LLM_TIMEOUT_SECONDS`
+defaults to 120 and may need raising. The prompt is sized to fit a 4096-token context (`TRUSTDOC_LLM_CONTEXT_TOKENS`,
+passed to Ollama as `num_ctx`); a warning is attached when the estimated prompt may not fit.
+
+### Worked example
+
+```python
+from trustdoc.app import bootstrap
+from trustdoc.ingestion import IngestionService
+from trustdoc.models import Project
+from trustdoc.workflows import create_ask_service, render_ask_result
+
+ctx = bootstrap()
+with ctx.db.session() as s:
+    project = s.projects.create(Project(name="my-project"))
+IngestionService(ctx.db, ctx.settings).ingest_directory(project.id, "path/to/repo")   # Part 2
+
+service = create_ask_service(ctx.db, ctx.settings)        # real Part 3 retriever + configured LLM (both lazy)
+result = service.ask(project.id, "How does the retry mechanism work?")
+print(render_ask_result(result))
+```
+
+Or from the command line (the project must already be ingested; there is no CLI for creating or ingesting
+projects yet):
+
+```bash
+python -m trustdoc ask --project-id 1 --question "How does the retry mechanism work?"
+python -m trustdoc ask --project my-project -q "..." --show-evidence      # also print short evidence snippets
+python -m trustdoc ask --project-id 1 -q "..." --json                     # full structured result
+python -m trustdoc ask --help
+```
+
+Exit codes: `0` answered or "insufficient evidence"; `1` operational failure (retrieval or generation);
+`2` usage/configuration problem (unknown project, invalid question, no model configured, missing dependency).
+Errors go to stderr. The CLI never prints the prompt, secrets, or full source text.
+
+Output shape (produced by `examples/ask_demo.py` with the **stand-in** retrieval and stub, to show the format
+only; it is not a real answer):
+
+```
+Result: answered | model: extractive-stub (stub)  [STAND-IN, not a language model] | citation check: cited
+
+Answer:
+Stand-in response (not a language model). The top retrieved evidence [E1] begins: "def compute_backoff(...
+
+Sources cited:
+  [E1] taskqueue/workers.py:47-50  (taskqueue.workers.compute_backoff)
+
+Retrieved evidence not cited in the answer:
+  [E2] reference.pdf, p.2
+  [E5] README.md:20-23 § TaskQueue > Retry policy
+```
+
+### How citations map to evidence
+
+Each evidence item shown to the model gets a stable ID (`E1`, `E2`, ... in rank order) and is rendered as a fenced
+block carrying its exact retrieval citation label (`pkg/mod.py:10-24`, `reference.pdf, p.3`,
+`README.md:4-9 § A > B`) and qualified name. The model is told to cite with those IDs. Afterwards a
+deterministic check parses `[E1]`, `[E1, E3]`, `[E1][E2]` and:
+
+* maps valid IDs back to the real evidence (`AskResult.citations`: label, source, lines/page/heading, chunk id);
+* never accepts unknown IDs (including IDs of evidence that was dropped by the prompt budget): they are replaced
+  in `answer` with `[unknown source E9]`, listed in `invalid_citation_ids`, and never "fixed" by guessing;
+  `raw_answer` always holds exactly what the model wrote;
+* reports `grounding`: `cited`, `cited_with_invalid_references`, or `uncited` (no valid citation, flagged
+  in `warnings` so the answer is not presented as grounded).
+
+This checks that cited IDs exist, **not** that the cited text supports the claim next to it. `claims_verified`
+is always `False` in Part 4; claim-level verification is Part 5.
+
+### How abstention works
+
+1. **Retrieval abstention:** if Part 3 reports `abstained` (best reranker score below the threshold) or yields no
+   evidence, the result is `insufficient_evidence` and the LLM is not called. The closest sources are listed
+   (labels and scores only) for transparency.
+2. **Model-declared:** the prompt asks the model to start with `INSUFFICIENT_EVIDENCE` when the evidence does not
+   support an answer; that is reported as `insufficient_evidence` with `abstention_reason=model_declared_insufficient`.
+   Small models may ignore this instruction.
+
+### Safety measures and limits
+
+* Evidence is fenced, declared untrusted in the system prompt, stripped of control characters, and text that
+  imitates our fence markers or citation IDs is neutralised before it reaches the model. This **reduces but does
+  not eliminate** prompt-injection risk, and prompting cannot guarantee factual correctness.
+* Prompt limits (`TRUSTDOC_ASK_MAX_EVIDENCE_ITEMS`, `..._MAX_EVIDENCE_CHARS`, `..._MAX_QUESTION_CHARS`): extra
+  evidence is dropped (and reported), only the top item may be truncated (with an explicit marker), and
+  over-long questions are rejected.
+* Retrieved evidence from another project is discarded even though retrieval already prevents it.
+
+### Known limitations
+
+* **The retrieval relevance threshold is still the uncalibrated placeholder `0.0`.** A result that did not abstain
+  does not show the evidence is sufficient; a warning is attached whenever the placeholder is in effect.
+* **The real Sentence-Transformer embedder and Cross-Encoder have not been verified end-to-end** in the original
+  development environment (Part 3 was tested with stand-ins), so end-to-end answer quality with real models is
+  unknown.
+* **The LLM backends have not been run against a real model.** The Ollama backend is tested against a local HTTP
+  server that mimics Ollama's documented `/api/chat` contract; the Transformers backend against fake `torch` /
+  `transformers` modules. Hallucination rates and answer quality are unmeasured.
+* One question at a time (no conversation memory), no streaming, English-centric prompts, and the token estimate
+  is a rough characters/3 heuristic.
+
 ## Tests
 
 ```bash
 pip install -e ".[dev,pdf,retrieval]"
-pytest                                    # everything (239 tests with all extras)
+pytest                                    # everything (see the count in the Part 4 test run)
 pytest tests/test_retrieval_fusion.py tests/test_retrieval_threshold.py tests/test_faiss_index.py \
        tests/test_bm25_index.py tests/test_index_manager.py tests/test_retriever.py \
        tests/test_retrieval_integration.py tests/test_evaluation.py     # Part 3 core
+pytest tests/test_ask_prompts.py tests/test_ask_citations.py tests/test_ask_workflow.py \
+       tests/test_llm_factory_config.py tests/test_ollama_backend.py tests/test_transformers_backend.py \
+       tests/test_stub_llm.py tests/test_ask_cli.py tests/test_ask_integration.py    # Part 4
 pytest --cov=trustdoc                     # with coverage
 ```
 
 Tests never download models: embeddings and reranking use deterministic stand-ins (`HashingEmbedder`,
 `OverlapReranker`) or scripted rerankers, and the Sentence-Transformers wrapper code is tested against a
-fake `sentence_transformers` module. With a lightweight install the tests that need numpy / FAISS /
+fake `sentence_transformers` module. Part 4 tests use mocked retrievers and LLMs, a local HTTP server mimicking Ollama, and fake `torch`/`transformers` modules, so no LLM is ever downloaded. With a lightweight install the tests that need numpy / FAISS /
 rank_bm25 / PyMuPDF are skipped.
 
 ## Roadmap
 
 1. Foundation & data model - done
 2. Source & document ingestion - done
-3. Knowledge base & hybrid retrieval - done (this part)
-4-8. ASK, GENERATE, VERIFY (Tier 1 / Tier 2, Trust Score), UI, final evaluation - one part at a time.
+3. Knowledge base & hybrid retrieval - done
+4. RAG Ask + grounded generation - done (this part)
+5-8. VERIFY (claim extraction, Tier 1 / Tier 2, Trust Score), GENERATE, UI, final evaluation - one part at a time.

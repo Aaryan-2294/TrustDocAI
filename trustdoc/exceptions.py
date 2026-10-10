@@ -61,3 +61,32 @@ class StaleIndexError(RetrievalError):
 
 class IndexCorruptError(RetrievalError):
     """Index files are missing, unreadable or inconsistent."""
+
+
+# ---------------------------------------------------------------------- ask / LLM
+class InvalidQuestionError(TrustDocError):
+    """The question is empty, too long, or contains unusable characters."""
+
+
+class LLMError(TrustDocError):
+    """Base class for language-model backend failures."""
+
+
+class LLMNotConfiguredError(LLMError):
+    """No usable LLM backend/model is configured (set TRUSTDOC_LLM_PROVIDER / TRUSTDOC_LLM_MODEL)."""
+
+
+class LLMUnavailableError(LLMError):
+    """The backend cannot be reached or the model is not installed locally."""
+
+
+class LLMTimeoutError(LLMError):
+    """The backend did not answer within the configured timeout."""
+
+
+class LLMResponseError(LLMError):
+    """The backend answered, but the response was unusable (malformed, error status, too long)."""
+
+
+class LLMEmptyOutputError(LLMResponseError):
+    """The model returned no text."""

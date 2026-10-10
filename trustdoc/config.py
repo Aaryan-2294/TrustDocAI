@@ -67,7 +67,18 @@ class LLMConfig:
     base_url: str | None = None
     api_key_env: str = "TRUSTDOC_LLM_API_KEY"  # NAME of the env var, never the key
     temperature: float = 0.0
-    timeout_seconds: int = 60
+    timeout_seconds: int = 120     # CPU inference is slow; raised from 60 in Part 4
+    max_tokens: int = 512          # maximum generated tokens per answer
+    context_tokens: int = 4096     # context window requested from / assumed for the model
+
+
+@dataclass(frozen=True)
+class AskConfig:
+    """Limits for the Ask workflow (Part 4). Sized to fit a ~4k-token context."""
+
+    max_evidence_items: int = 5       # evidence chunks placed in the prompt (also the retrieval top_k)
+    max_evidence_chars: int = 6000    # total characters of evidence text in the prompt
+    max_question_chars: int = 2000    # longer questions are rejected, never truncated
 
 
 @dataclass(frozen=True)
@@ -77,6 +88,7 @@ class Settings:
     chunking: ChunkingConfig = field(default_factory=ChunkingConfig)
     retrieval: RetrievalConfig = field(default_factory=RetrievalConfig)
     llm: LLMConfig = field(default_factory=LLMConfig)
+    ask: AskConfig = field(default_factory=AskConfig)
 
     # ------------------------------------------------------------------ build
     @classmethod
@@ -155,9 +167,21 @@ class Settings:
             timeout_seconds=_as_int(
                 get("LLM_TIMEOUT_SECONDS", l.timeout_seconds), "LLM_TIMEOUT_SECONDS"
             ),
+            max_tokens=_as_int(get("LLM_MAX_TOKENS", l.max_tokens), "LLM_MAX_TOKENS"),
+            context_tokens=_as_int(get("LLM_CONTEXT_TOKENS", l.context_tokens), "LLM_CONTEXT_TOKENS"),
         )
 
-        settings = cls(storage, logging_cfg, chunking, retrieval, llm)
+        a = AskConfig()
+        ask = AskConfig(
+            max_evidence_items=_as_int(
+                get("ASK_MAX_EVIDENCE_ITEMS", a.max_evidence_items), "ASK_MAX_EVIDENCE_ITEMS"),
+            max_evidence_chars=_as_int(
+                get("ASK_MAX_EVIDENCE_CHARS", a.max_evidence_chars), "ASK_MAX_EVIDENCE_CHARS"),
+            max_question_chars=_as_int(
+                get("ASK_MAX_QUESTION_CHARS", a.max_question_chars), "ASK_MAX_QUESTION_CHARS"),
+        )
+
+        settings = cls(storage, logging_cfg, chunking, retrieval, llm, ask)
         settings.validate()
         return settings
 
@@ -184,6 +208,17 @@ class Settings:
             raise ConfigError("LLM_TEMPERATURE must be between 0 and 2")
         if self.llm.timeout_seconds <= 0:
             raise ConfigError("LLM_TIMEOUT_SECONDS must be positive")
+        if self.llm.max_tokens <= 0:
+            raise ConfigError("LLM_MAX_TOKENS must be positive")
+        if self.llm.context_tokens <= self.llm.max_tokens:
+            raise ConfigError("LLM_CONTEXT_TOKENS must be larger than LLM_MAX_TOKENS")
+        ask = self.ask
+        if ask.max_evidence_items <= 0:
+            raise ConfigError("ASK_MAX_EVIDENCE_ITEMS must be positive")
+        if ask.max_evidence_chars < 200:
+            raise ConfigError("ASK_MAX_EVIDENCE_CHARS must be at least 200")
+        if ask.max_question_chars <= 0:
+            raise ConfigError("ASK_MAX_QUESTION_CHARS must be positive")
 
     @property
     def log_level_int(self) -> int:
