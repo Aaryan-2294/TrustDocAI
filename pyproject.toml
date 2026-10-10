@@ -14,10 +14,11 @@ dependencies = []
 
 [project.optional-dependencies]
 pdf = ["PyMuPDF>=1.24"]                       # Part 2 (ingestion)
-retrieval = [                                  # Parts 4-5 (retrieval pipeline)
-    "sentence-transformers>=3.0",
+retrieval = [                                  # Part 3 (hybrid retrieval engine)
+    "sentence-transformers>=3.0",              # embeddings + Cross-Encoder (pulls in torch)
     "faiss-cpu>=1.8",
     "rank_bm25>=0.2.2",
+    "numpy>=1.24",
 ]
 ui = ["streamlit>=1.36"]                       # Part 8 (UI)
 dev = ["pytest>=8.0", "pytest-cov>=5.0"]
@@ -28,6 +29,9 @@ trustdoc = "trustdoc.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["trustdoc*"]
+
+[tool.setuptools.package-data]
+"trustdoc.evaluation" = ["data/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

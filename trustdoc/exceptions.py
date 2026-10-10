@@ -44,3 +44,20 @@ class ParsingError(IngestionError):
 
 class MissingDependencyError(TrustDocError):
     """An optional dependency required for this operation is not installed."""
+
+
+# ---------------------------------------------------------------- retrieval
+class RetrievalError(TrustDocError):
+    """Base class for retrieval / indexing failures."""
+
+
+class IndexNotBuiltError(RetrievalError):
+    """No usable index exists for the project (build it first)."""
+
+
+class StaleIndexError(RetrievalError):
+    """The stored index no longer matches the project's knowledge base."""
+
+
+class IndexCorruptError(RetrievalError):
+    """Index files are missing, unreadable or inconsistent."""

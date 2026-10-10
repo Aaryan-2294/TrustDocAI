@@ -1,0 +1,62 @@
+{
+  "name": "taskqueue-sample-v1",
+  "description": "ILLUSTRATIVE FIXTURE: 16 hand-written queries over a tiny synthetic project (4 Python modules, a README, a 3-page PDF). Relevance labels were written from the corpus, not tuned to any retriever's output. Too small for statistically meaningful conclusions.",
+  "illustrative": true,
+  "project_dir": "sample_project",
+  "queries": [
+    {"id": "fn-1", "category": "exact_function_name", "text": "compute_backoff",
+     "relevant": [{"source": "taskqueue/workers.py", "qualified_name": "taskqueue.workers.compute_backoff"}]},
+    {"id": "fn-2", "category": "exact_function_name", "text": "fetch_pending",
+     "relevant": [{"source": "taskqueue/storage.py", "qualified_name": "taskqueue.storage.SqliteBackend.fetch_pending"}]},
+
+    {"id": "param-1", "category": "exact_parameter_name", "text": "delay_seconds",
+     "relevant": [{"source": "taskqueue/queue.py", "qualified_name": "taskqueue.queue.TaskQueue.enqueue"}]},
+    {"id": "param-2", "category": "exact_parameter_name", "text": "visibility_timeout",
+     "relevant": [
+       {"source": "taskqueue/workers.py", "qualified_name": "taskqueue.workers.WorkerPool.__init__"},
+       {"source": "taskqueue/config.py", "qualified_name": "taskqueue.config.validate_config"}
+     ]},
+
+    {"id": "sem-1", "category": "semantic_paraphrase", "text": "how do I make jobs that failed run again",
+     "relevant": [
+       {"source": "taskqueue/queue.py", "qualified_name": "taskqueue.queue.TaskQueue.retry_failed"},
+       {"source": "README.md", "heading": "TaskQueue > Retry policy"}
+     ]},
+    {"id": "sem-2", "category": "semantic_paraphrase", "text": "stop the background threads without losing work that is in progress",
+     "relevant": [{"source": "taskqueue/workers.py", "qualified_name": "taskqueue.workers.WorkerPool.shutdown"}]},
+    {"id": "sem-3", "category": "semantic_paraphrase", "text": "reclaim disk space taken by finished jobs",
+     "relevant": [
+       {"source": "taskqueue/storage.py", "qualified_name": "taskqueue.storage.SqliteBackend.compact"},
+       {"source": "reference.pdf", "page": 3}
+     ]},
+
+    {"id": "class-1", "category": "class_related", "text": "class that stores tasks durably in a SQLite database",
+     "relevant": [{"source": "taskqueue/storage.py", "qualified_name": "taskqueue.storage.SqliteBackend"}]},
+    {"id": "class-2", "category": "class_related", "text": "WorkerPool class",
+     "relevant": [{"source": "taskqueue/workers.py", "qualified_name": "taskqueue.workers.WorkerPool"}]},
+
+    {"id": "doc-1", "category": "readme_documentation", "text": "how do I install the library",
+     "relevant": [{"source": "README.md", "heading": "TaskQueue > Installation"}]},
+    {"id": "doc-2", "category": "readme_documentation", "text": "which environment variables override the configuration file",
+     "relevant": [{"source": "README.md", "heading": "TaskQueue > Configuration"}]},
+
+    {"id": "pdf-1", "category": "pdf_reference", "text": "at-least-once delivery guarantee",
+     "relevant": [{"source": "reference.pdf", "page": 1}]},
+    {"id": "pdf-2", "category": "pdf_reference", "text": "exponential backoff with full jitter and the 300 second cap",
+     "relevant": [{"source": "reference.pdf", "page": 2}]},
+    {"id": "pdf-3", "category": "pdf_reference", "text": "how long are completed tasks retained before deletion",
+     "relevant": [{"source": "reference.pdf", "page": 3}]},
+
+    {"id": "mixed-1", "category": "mixed_code_documentation", "text": "retry delay between attempts",
+     "relevant": [
+       {"source": "taskqueue/workers.py", "qualified_name": "taskqueue.workers.compute_backoff"},
+       {"source": "reference.pdf", "page": 2},
+       {"source": "README.md", "heading": "TaskQueue > Retry policy"}
+     ]},
+    {"id": "mixed-2", "category": "mixed_code_documentation", "text": "what happens when a worker crashes before acknowledging a task",
+     "relevant": [
+       {"source": "reference.pdf", "page": 1},
+       {"source": "taskqueue/workers.py", "qualified_name": "taskqueue.workers.WorkerPool.__init__"}
+     ]}
+  ]
+}

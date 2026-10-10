@@ -30,6 +30,7 @@ class StorageConfig:
     db_path: Path
     uploads_dir: Path
     log_dir: Path
+    indexes_dir: Path
 
 
 @dataclass(frozen=True)
@@ -54,7 +55,9 @@ class RetrievalConfig:
     candidate_k: int = 20          # candidates taken from each retriever
     final_k: int = 5               # evidence items kept after reranking
     rrf_k: int = 60                # RRF constant
-    relevance_threshold: float = 0.0  # calibrated experimentally later
+    relevance_threshold: float = 0.0  # UNCALIBRATED placeholder; calibrate experimentally
+    device: str = "cpu"            # "cpu" (default), "cuda", "mps" ... passed to sentence-transformers
+    embedding_batch_size: int = 32
 
 
 @dataclass(frozen=True)
@@ -109,6 +112,7 @@ class Settings:
             db_path=db_path,
             uploads_dir=data_dir / "uploads",
             log_dir=data_dir / "logs",
+            indexes_dir=data_dir / "indexes",
         )
 
         log_defaults = LoggingConfig()
@@ -134,6 +138,10 @@ class Settings:
             rrf_k=_as_int(get("RRF_K", r.rrf_k), "RRF_K"),
             relevance_threshold=_as_float(
                 get("RELEVANCE_THRESHOLD", r.relevance_threshold), "RELEVANCE_THRESHOLD"
+            ),
+            device=str(get("DEVICE", r.device)).lower(),
+            embedding_batch_size=_as_int(
+                get("EMBEDDING_BATCH_SIZE", r.embedding_batch_size), "EMBEDDING_BATCH_SIZE"
             ),
         )
 
@@ -168,6 +176,10 @@ class Settings:
             raise ConfigError("CANDIDATE_K, FINAL_K and RRF_K must be positive")
         if rt.final_k > rt.candidate_k:
             raise ConfigError("FINAL_K must not exceed CANDIDATE_K")
+        if rt.embedding_batch_size <= 0:
+            raise ConfigError("EMBEDDING_BATCH_SIZE must be positive")
+        if not rt.device:
+            raise ConfigError("DEVICE must not be empty")
         if not 0.0 <= self.llm.temperature <= 2.0:
             raise ConfigError("LLM_TEMPERATURE must be between 0 and 2")
         if self.llm.timeout_seconds <= 0:
@@ -182,6 +194,7 @@ class Settings:
             self.storage.data_dir,
             self.storage.uploads_dir,
             self.storage.log_dir,
+            self.storage.indexes_dir,
             self.storage.db_path.parent,
         ):
             path.mkdir(parents=True, exist_ok=True)

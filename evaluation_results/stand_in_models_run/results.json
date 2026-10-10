@@ -1,0 +1,5108 @@
+{
+  "meta": {
+    "generated_at": "2026-10-10T03:44:26+00:00",
+    "dataset": {
+      "name": "taskqueue-sample-v1",
+      "description": "ILLUSTRATIVE FIXTURE: 16 hand-written queries over a tiny synthetic project (4 Python modules, a README, a 3-page PDF). Relevance labels were written from the corpus, not tuned to any retriever's output. Too small for statistically meaningful conclusions.",
+      "illustrative": true,
+      "n_queries": 16,
+      "categories": [
+        "class_related",
+        "exact_function_name",
+        "exact_parameter_name",
+        "mixed_code_documentation",
+        "pdf_reference",
+        "readme_documentation",
+        "semantic_paraphrase"
+      ]
+    },
+    "corpus": {
+      "chunks": 37,
+      "sources": 7
+    },
+    "ks": [
+      1,
+      3,
+      5,
+      10
+    ],
+    "pipelines": {
+      "bm25": "A. BM25 only",
+      "faiss": "B. FAISS only",
+      "hybrid_rrf": "C. Hybrid (FAISS + BM25 + RRF)",
+      "hybrid_rerank": "D. Hybrid + Cross-Encoder rerank"
+    },
+    "embedder": {
+      "model": "hashing-bow-v1",
+      "is_stub": true
+    },
+    "reranker": {
+      "model": "token-overlap-v1",
+      "is_stub": true
+    },
+    "uses_stand_in_models": true,
+    "retrieval_config": {
+      "candidate_k": 20,
+      "rrf_k": 60
+    },
+    "environment": {
+      "python": "3.12.3",
+      "platform": "Linux-6.18.44-fc-v114-x86_64-with-glibc2.39",
+      "faiss-cpu": "1.15.1",
+      "rank-bm25": "0.2.2",
+      "sentence-transformers": "not installed",
+      "numpy": "2.4.4",
+      "torch": "not installed"
+    }
+  },
+  "results": {
+    "bm25": {
+      "label": "A. BM25 only",
+      "overall": {
+        "recall@1": 0.7708,
+        "recall@3": 0.9167,
+        "recall@5": 0.9375,
+        "recall@10": 0.9688,
+        "mrr": 0.9688,
+        "mean_latency_ms": 2.0158,
+        "n_queries": 16.0
+      },
+      "by_category": {
+        "class_related": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.754,
+          "n_queries": 2.0
+        },
+        "exact_function_name": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 2.6815,
+          "n_queries": 2.0
+        },
+        "exact_parameter_name": {
+          "recall@1": 0.75,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.6885,
+          "n_queries": 2.0
+        },
+        "mixed_code_documentation": {
+          "recall@1": 0.4167,
+          "recall@3": 0.5833,
+          "recall@5": 0.75,
+          "recall@10": 0.75,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.7395,
+          "n_queries": 2.0
+        },
+        "pdf_reference": {
+          "recall@1": 0.6667,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 0.8333,
+          "mean_latency_ms": 2.0517,
+          "n_queries": 3.0
+        },
+        "readme_documentation": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 2.034,
+          "n_queries": 2.0
+        },
+        "semantic_paraphrase": {
+          "recall@1": 0.6667,
+          "recall@3": 0.8333,
+          "recall@5": 0.8333,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 2.101,
+          "n_queries": 3.0
+        }
+      },
+      "queries": [
+        {
+          "id": "fn-1",
+          "category": "exact_function_name",
+          "text": "compute_backoff",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.637,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "fn-2",
+          "category": "exact_function_name",
+          "text": "fetch_pending",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.726,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 27,
+              "citation": "taskqueue/storage.py:21-27",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "param-1",
+          "category": "exact_parameter_name",
+          "text": "delay_seconds",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.69,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "param-2",
+          "category": "exact_parameter_name",
+          "text": "visibility_timeout",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.687,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-1",
+          "category": "semantic_paraphrase",
+          "text": "how do I make jobs that failed run again",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 0.5,
+            "5": 0.5,
+            "10": 1.0
+          },
+          "latency_ms": 2.674,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": true
+            },
+            {
+              "rank": 7,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-2",
+          "category": "semantic_paraphrase",
+          "text": "stop the background threads without losing work that is in progress",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.963,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 30,
+              "citation": "taskqueue/workers.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-3",
+          "category": "semantic_paraphrase",
+          "text": "reclaim disk space taken by finished jobs",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.666,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "class-1",
+          "category": "class_related",
+          "text": "class that stores tasks durably in a SQLite database",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.86,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 25,
+              "citation": "taskqueue/storage.py:10-11",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 24,
+              "citation": "taskqueue/storage.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 18,
+              "citation": "taskqueue/queue.py:22-23",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 11,
+              "citation": "taskqueue/__init__.py:1",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "class-2",
+          "category": "class_related",
+          "text": "WorkerPool class",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.648,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 18,
+              "citation": "taskqueue/queue.py:22-23",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 25,
+              "citation": "taskqueue/storage.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "doc-1",
+          "category": "readme_documentation",
+          "text": "how do I install the library",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.275,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "doc-2",
+          "category": "readme_documentation",
+          "text": "which environment variables override the configuration file",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.793,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 14,
+              "citation": "taskqueue/config.py:15-22",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-1",
+          "category": "pdf_reference",
+          "text": "at-least-once delivery guarantee",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.488,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-2",
+          "category": "pdf_reference",
+          "text": "exponential backoff with full jitter and the 300 second cap",
+          "first_relevant_rank": 2,
+          "reciprocal_rank": 0.5,
+          "recall": {
+            "1": 0.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.832,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 2,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 14,
+              "citation": "taskqueue/config.py:15-22",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-3",
+          "category": "pdf_reference",
+          "text": "how long are completed tasks retained before deletion",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.835,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 18,
+              "citation": "taskqueue/queue.py:22-23",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "mixed-1",
+          "category": "mixed_code_documentation",
+          "text": "retry delay between attempts",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.3333,
+            "3": 0.6667,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.714,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": true
+            },
+            {
+              "rank": 5,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "mixed-2",
+          "category": "mixed_code_documentation",
+          "text": "what happens when a worker crashes before acknowledging a task",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 0.5,
+            "5": 0.5,
+            "10": 0.5
+          },
+          "latency_ms": 1.765,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 1,
+              "citation": "README.md:1-3 \u00a7 TaskQueue",
+              "relevant": false
+            }
+          ]
+        }
+      ]
+    },
+    "faiss": {
+      "label": "B. FAISS only",
+      "overall": {
+        "recall@1": 0.7083,
+        "recall@3": 0.8542,
+        "recall@5": 0.9688,
+        "recall@10": 0.9688,
+        "mrr": 0.8906,
+        "mean_latency_ms": 1.7288,
+        "n_queries": 16.0
+      },
+      "by_category": {
+        "class_related": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.7305,
+          "n_queries": 2.0
+        },
+        "exact_function_name": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.7535,
+          "n_queries": 2.0
+        },
+        "exact_parameter_name": {
+          "recall@1": 0.75,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.695,
+          "n_queries": 2.0
+        },
+        "mixed_code_documentation": {
+          "recall@1": 0.4167,
+          "recall@3": 0.5833,
+          "recall@5": 0.75,
+          "recall@10": 0.75,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.7205,
+          "n_queries": 2.0
+        },
+        "pdf_reference": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.7407,
+          "n_queries": 3.0
+        },
+        "readme_documentation": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.754,
+          "n_queries": 2.0
+        },
+        "semantic_paraphrase": {
+          "recall@1": 0.0,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 0.4167,
+          "mean_latency_ms": 1.7103,
+          "n_queries": 3.0
+        }
+      },
+      "queries": [
+        {
+          "id": "fn-1",
+          "category": "exact_function_name",
+          "text": "compute_backoff",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.821,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 11,
+              "citation": "taskqueue/__init__.py:1",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "fn-2",
+          "category": "exact_function_name",
+          "text": "fetch_pending",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.686,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 14,
+              "citation": "taskqueue/config.py:15-22",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 19,
+              "citation": "taskqueue/queue.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 27,
+              "citation": "taskqueue/storage.py:21-27",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "param-1",
+          "category": "exact_parameter_name",
+          "text": "delay_seconds",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.678,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 11,
+              "citation": "taskqueue/__init__.py:1",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "param-2",
+          "category": "exact_parameter_name",
+          "text": "visibility_timeout",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.712,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-1",
+          "category": "semantic_paraphrase",
+          "text": "how do I make jobs that failed run again",
+          "first_relevant_rank": 2,
+          "reciprocal_rank": 0.5,
+          "recall": {
+            "1": 0.0,
+            "3": 0.5,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.645,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 2,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": true
+            },
+            {
+              "rank": 5,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 19,
+              "citation": "taskqueue/queue.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-2",
+          "category": "semantic_paraphrase",
+          "text": "stop the background threads without losing work that is in progress",
+          "first_relevant_rank": 4,
+          "reciprocal_rank": 0.25,
+          "recall": {
+            "1": 0.0,
+            "3": 0.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.792,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 2,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": true
+            },
+            {
+              "rank": 5,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 30,
+              "citation": "taskqueue/workers.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-3",
+          "category": "semantic_paraphrase",
+          "text": "reclaim disk space taken by finished jobs",
+          "first_relevant_rank": 2,
+          "reciprocal_rank": 0.5,
+          "recall": {
+            "1": 0.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.694,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 2,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": true
+            },
+            {
+              "rank": 4,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 1,
+              "citation": "README.md:1-3 \u00a7 TaskQueue",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "class-1",
+          "category": "class_related",
+          "text": "class that stores tasks durably in a SQLite database",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.776,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 25,
+              "citation": "taskqueue/storage.py:10-11",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 24,
+              "citation": "taskqueue/storage.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 30,
+              "citation": "taskqueue/workers.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 11,
+              "citation": "taskqueue/__init__.py:1",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "class-2",
+          "category": "class_related",
+          "text": "WorkerPool class",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.685,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "doc-1",
+          "category": "readme_documentation",
+          "text": "how do I install the library",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.799,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 25,
+              "citation": "taskqueue/storage.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 30,
+              "citation": "taskqueue/workers.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "doc-2",
+          "category": "readme_documentation",
+          "text": "which environment variables override the configuration file",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.709,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 14,
+              "citation": "taskqueue/config.py:15-22",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 27,
+              "citation": "taskqueue/storage.py:21-27",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-1",
+          "category": "pdf_reference",
+          "text": "at-least-once delivery guarantee",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.62,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-2",
+          "category": "pdf_reference",
+          "text": "exponential backoff with full jitter and the 300 second cap",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.896,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 25,
+              "citation": "taskqueue/storage.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-3",
+          "category": "pdf_reference",
+          "text": "how long are completed tasks retained before deletion",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.706,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "mixed-1",
+          "category": "mixed_code_documentation",
+          "text": "retry delay between attempts",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.3333,
+            "3": 0.6667,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.756,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": true
+            },
+            {
+              "rank": 5,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "mixed-2",
+          "category": "mixed_code_documentation",
+          "text": "what happens when a worker crashes before acknowledging a task",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 0.5,
+            "5": 0.5,
+            "10": 0.5
+          },
+          "latency_ms": 1.685,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 1,
+              "citation": "README.md:1-3 \u00a7 TaskQueue",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            }
+          ]
+        }
+      ]
+    },
+    "hybrid_rrf": {
+      "label": "C. Hybrid (FAISS + BM25 + RRF)",
+      "overall": {
+        "recall@1": 0.8021,
+        "recall@3": 0.9167,
+        "recall@5": 0.9688,
+        "recall@10": 0.9688,
+        "mrr": 0.9688,
+        "mean_latency_ms": 2.2038,
+        "n_queries": 16.0
+      },
+      "by_category": {
+        "class_related": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 2.421,
+          "n_queries": 2.0
+        },
+        "exact_function_name": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.896,
+          "n_queries": 2.0
+        },
+        "exact_parameter_name": {
+          "recall@1": 0.75,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.9605,
+          "n_queries": 2.0
+        },
+        "mixed_code_documentation": {
+          "recall@1": 0.4167,
+          "recall@3": 0.5833,
+          "recall@5": 0.75,
+          "recall@10": 0.75,
+          "mrr": 1.0,
+          "mean_latency_ms": 2.328,
+          "n_queries": 2.0
+        },
+        "pdf_reference": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 2.4403,
+          "n_queries": 3.0
+        },
+        "readme_documentation": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 1.968,
+          "n_queries": 2.0
+        },
+        "semantic_paraphrase": {
+          "recall@1": 0.5,
+          "recall@3": 0.8333,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 0.8333,
+          "mean_latency_ms": 2.2643,
+          "n_queries": 3.0
+        }
+      },
+      "queries": [
+        {
+          "id": "fn-1",
+          "category": "exact_function_name",
+          "text": "compute_backoff",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.887,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 11,
+              "citation": "taskqueue/__init__.py:1",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "fn-2",
+          "category": "exact_function_name",
+          "text": "fetch_pending",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.905,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 27,
+              "citation": "taskqueue/storage.py:21-27",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 14,
+              "citation": "taskqueue/config.py:15-22",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 19,
+              "citation": "taskqueue/queue.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "param-1",
+          "category": "exact_parameter_name",
+          "text": "delay_seconds",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.93,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "param-2",
+          "category": "exact_parameter_name",
+          "text": "visibility_timeout",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.991,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-1",
+          "category": "semantic_paraphrase",
+          "text": "how do I make jobs that failed run again",
+          "first_relevant_rank": 2,
+          "reciprocal_rank": 0.5,
+          "recall": {
+            "1": 0.0,
+            "3": 0.5,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.485,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 2,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": true
+            },
+            {
+              "rank": 5,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 19,
+              "citation": "taskqueue/queue.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-2",
+          "category": "semantic_paraphrase",
+          "text": "stop the background threads without losing work that is in progress",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.281,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 30,
+              "citation": "taskqueue/workers.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-3",
+          "category": "semantic_paraphrase",
+          "text": "reclaim disk space taken by finished jobs",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.027,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": true
+            },
+            {
+              "rank": 4,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "class-1",
+          "category": "class_related",
+          "text": "class that stores tasks durably in a SQLite database",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.706,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 25,
+              "citation": "taskqueue/storage.py:10-11",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 24,
+              "citation": "taskqueue/storage.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 30,
+              "citation": "taskqueue/workers.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 11,
+              "citation": "taskqueue/__init__.py:1",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 18,
+              "citation": "taskqueue/queue.py:22-23",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "class-2",
+          "category": "class_related",
+          "text": "WorkerPool class",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.136,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 18,
+              "citation": "taskqueue/queue.py:22-23",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "doc-1",
+          "category": "readme_documentation",
+          "text": "how do I install the library",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.928,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "doc-2",
+          "category": "readme_documentation",
+          "text": "which environment variables override the configuration file",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.008,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 14,
+              "citation": "taskqueue/config.py:15-22",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-1",
+          "category": "pdf_reference",
+          "text": "at-least-once delivery guarantee",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.004,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-2",
+          "category": "pdf_reference",
+          "text": "exponential backoff with full jitter and the 300 second cap",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.201,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-3",
+          "category": "pdf_reference",
+          "text": "how long are completed tasks retained before deletion",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 2.116,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 18,
+              "citation": "taskqueue/queue.py:22-23",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "mixed-1",
+          "category": "mixed_code_documentation",
+          "text": "retry delay between attempts",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.3333,
+            "3": 0.6667,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 1.891,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": true
+            },
+            {
+              "rank": 5,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "mixed-2",
+          "category": "mixed_code_documentation",
+          "text": "what happens when a worker crashes before acknowledging a task",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 0.5,
+            "5": 0.5,
+            "10": 0.5
+          },
+          "latency_ms": 2.765,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 1,
+              "citation": "README.md:1-3 \u00a7 TaskQueue",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            }
+          ]
+        }
+      ]
+    },
+    "hybrid_rerank": {
+      "label": "D. Hybrid + Cross-Encoder rerank",
+      "overall": {
+        "recall@1": 0.8333,
+        "recall@3": 0.9167,
+        "recall@5": 0.9688,
+        "recall@10": 0.9688,
+        "mrr": 1.0,
+        "mean_latency_ms": 3.7076,
+        "n_queries": 16.0
+      },
+      "by_category": {
+        "class_related": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 3.513,
+          "n_queries": 2.0
+        },
+        "exact_function_name": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 3.712,
+          "n_queries": 2.0
+        },
+        "exact_parameter_name": {
+          "recall@1": 0.75,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 3.57,
+          "n_queries": 2.0
+        },
+        "mixed_code_documentation": {
+          "recall@1": 0.4167,
+          "recall@3": 0.5833,
+          "recall@5": 0.75,
+          "recall@10": 0.75,
+          "mrr": 1.0,
+          "mean_latency_ms": 3.631,
+          "n_queries": 2.0
+        },
+        "pdf_reference": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 3.6043,
+          "n_queries": 3.0
+        },
+        "readme_documentation": {
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 3.637,
+          "n_queries": 2.0
+        },
+        "semantic_paraphrase": {
+          "recall@1": 0.6667,
+          "recall@3": 0.8333,
+          "recall@5": 1.0,
+          "recall@10": 1.0,
+          "mrr": 1.0,
+          "mean_latency_ms": 4.1277,
+          "n_queries": 3.0
+        }
+      },
+      "queries": [
+        {
+          "id": "fn-1",
+          "category": "exact_function_name",
+          "text": "compute_backoff",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.383,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 11,
+              "citation": "taskqueue/__init__.py:1",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "fn-2",
+          "category": "exact_function_name",
+          "text": "fetch_pending",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 4.041,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 27,
+              "citation": "taskqueue/storage.py:21-27",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 14,
+              "citation": "taskqueue/config.py:15-22",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 19,
+              "citation": "taskqueue/queue.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "param-1",
+          "category": "exact_parameter_name",
+          "text": "delay_seconds",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.664,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "param-2",
+          "category": "exact_parameter_name",
+          "text": "visibility_timeout",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.476,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-1",
+          "category": "semantic_paraphrase",
+          "text": "how do I make jobs that failed run again",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 0.5,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 4.742,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": true
+            },
+            {
+              "rank": 6,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 19,
+              "citation": "taskqueue/queue.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-2",
+          "category": "semantic_paraphrase",
+          "text": "stop the background threads without losing work that is in progress",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.832,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 30,
+              "citation": "taskqueue/workers.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "sem-3",
+          "category": "semantic_paraphrase",
+          "text": "reclaim disk space taken by finished jobs",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.809,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "class-1",
+          "category": "class_related",
+          "text": "class that stores tasks durably in a SQLite database",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.558,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 25,
+              "citation": "taskqueue/storage.py:10-11",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 24,
+              "citation": "taskqueue/storage.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 30,
+              "citation": "taskqueue/workers.py:1-7",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 28,
+              "citation": "taskqueue/storage.py:29-35",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "class-2",
+          "category": "class_related",
+          "text": "WorkerPool class",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.468,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 33,
+              "citation": "taskqueue/workers.py:21-26",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 32,
+              "citation": "taskqueue/workers.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 18,
+              "citation": "taskqueue/queue.py:22-23",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "doc-1",
+          "category": "readme_documentation",
+          "text": "how do I install the library",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.638,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "doc-2",
+          "category": "readme_documentation",
+          "text": "which environment variables override the configuration file",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.636,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 14,
+              "citation": "taskqueue/config.py:15-22",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 12,
+              "citation": "taskqueue/config.py:1-8",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 13,
+              "citation": "taskqueue/config.py:11-12",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-1",
+          "category": "pdf_reference",
+          "text": "at-least-once delivery guarantee",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.555,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 15,
+              "citation": "taskqueue/config.py:25-30",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 21,
+              "citation": "taskqueue/queue.py:40-49",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-2",
+          "category": "pdf_reference",
+          "text": "exponential backoff with full jitter and the 300 second cap",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.704,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 2,
+              "citation": "README.md:5-8 \u00a7 TaskQueue > Installation",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 23,
+              "citation": "taskqueue/queue.py:61-65",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "pdf-3",
+          "category": "pdf_reference",
+          "text": "how long are completed tasks retained before deletion",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 1.0,
+            "3": 1.0,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.554,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 10,
+              "citation": "reference.pdf, p.3",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 29,
+              "citation": "taskqueue/storage.py:37-46",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 18,
+              "citation": "taskqueue/queue.py:22-23",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "mixed-1",
+          "category": "mixed_code_documentation",
+          "text": "retry delay between attempts",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.3333,
+            "3": 0.6667,
+            "5": 1.0,
+            "10": 1.0
+          },
+          "latency_ms": 3.634,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 5,
+              "citation": "README.md:20-23 \u00a7 TaskQueue > Retry policy",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": true
+            },
+            {
+              "rank": 3,
+              "chunk_id": 22,
+              "citation": "taskqueue/queue.py:51-59",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 37,
+              "citation": "taskqueue/workers.py:47-50",
+              "relevant": true
+            },
+            {
+              "rank": 5,
+              "chunk_id": 16,
+              "citation": "taskqueue/queue.py:1-9",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 17,
+              "citation": "taskqueue/queue.py:12-19",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 6,
+              "citation": "README.md:27-30 \u00a7 TaskQueue > Troubleshooting > Tasks never run",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 26,
+              "citation": "taskqueue/storage.py:13-19",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 7,
+              "citation": "README.md:32-35 \u00a7 TaskQueue > Troubleshooting > Database file keeps growing",
+              "relevant": false
+            }
+          ]
+        },
+        {
+          "id": "mixed-2",
+          "category": "mixed_code_documentation",
+          "text": "what happens when a worker crashes before acknowledging a task",
+          "first_relevant_rank": 1,
+          "reciprocal_rank": 1.0,
+          "recall": {
+            "1": 0.5,
+            "3": 0.5,
+            "5": 0.5,
+            "10": 0.5
+          },
+          "latency_ms": 3.628,
+          "retrieved": [
+            {
+              "rank": 1,
+              "chunk_id": 8,
+              "citation": "reference.pdf, p.1",
+              "relevant": true
+            },
+            {
+              "rank": 2,
+              "chunk_id": 3,
+              "citation": "README.md:10-12 \u00a7 TaskQueue > Quick start",
+              "relevant": false
+            },
+            {
+              "rank": 3,
+              "chunk_id": 31,
+              "citation": "taskqueue/workers.py:10-11",
+              "relevant": false
+            },
+            {
+              "rank": 4,
+              "chunk_id": 9,
+              "citation": "reference.pdf, p.2",
+              "relevant": false
+            },
+            {
+              "rank": 5,
+              "chunk_id": 36,
+              "citation": "taskqueue/workers.py:42-44",
+              "relevant": false
+            },
+            {
+              "rank": 6,
+              "chunk_id": 34,
+              "citation": "taskqueue/workers.py:28-33",
+              "relevant": false
+            },
+            {
+              "rank": 7,
+              "chunk_id": 4,
+              "citation": "README.md:14-18 \u00a7 TaskQueue > Configuration",
+              "relevant": false
+            },
+            {
+              "rank": 8,
+              "chunk_id": 1,
+              "citation": "README.md:1-3 \u00a7 TaskQueue",
+              "relevant": false
+            },
+            {
+              "rank": 9,
+              "chunk_id": 20,
+              "citation": "taskqueue/queue.py:32-38",
+              "relevant": false
+            },
+            {
+              "rank": 10,
+              "chunk_id": 35,
+              "citation": "taskqueue/workers.py:35-39",
+              "relevant": false
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

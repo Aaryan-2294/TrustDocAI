@@ -275,6 +275,17 @@ class ChunkRepository(_Repo):
     def count_for_project(self, project_id: int) -> int:
         return int(self._one("SELECT COUNT(*) FROM chunks WHERE project_id=?", (project_id,))[0])
 
+    def list_signatures(self, project_id: int) -> list[tuple[int, int, int]]:
+        """Cheap (chunk_id, source_id, char_count) rows, without loading chunk text.
+
+        Used to detect whether a project's knowledge base changed (index staleness).
+        """
+        rows = self._all(
+            "SELECT id, source_id, char_count FROM chunks WHERE project_id=? ORDER BY id",
+            (project_id,),
+        )
+        return [(r["id"], r["source_id"], r["char_count"]) for r in rows]
+
     def delete_for_source(self, source_id: int) -> int:
         """Remove a source's chunks (e.g. before re-chunking)."""
         return self._conn.execute("DELETE FROM chunks WHERE source_id=?", (source_id,)).rowcount

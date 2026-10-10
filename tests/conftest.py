@@ -68,3 +68,47 @@ def make_pdf():
         return data
 
     return build
+
+
+# ----------------------------------------------------------- Part 3 fixtures
+import sys  # noqa: E402
+
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent))
+
+
+@pytest.fixture
+def retrieval_env(db, settings):
+    """Factory building (IndexManager, Retriever, embedder, reranker) on the shared test DB."""
+    pytest.importorskip("faiss")
+    pytest.importorskip("rank_bm25")
+    from retrieval_support import CountingEmbedder, RecordingReranker
+    from trustdoc.retrieval import IndexManager, Retriever
+
+    def build(*, embedder=None, reranker=None, auto_index=True, settings_override=None):
+        cfg = settings_override or settings
+        embedder = embedder or CountingEmbedder()
+        reranker = reranker if reranker is not None else RecordingReranker()
+        manager = IndexManager(db, cfg, embedder)
+        retriever = Retriever(db, cfg, manager, embedder, reranker, auto_index=auto_index)
+        return manager, retriever, embedder, reranker
+
+    return build
+
+
+@pytest.fixture
+def make_project(db, make_service):
+    """Create a project and ingest the shared test corpus into it."""
+    from corpus_support import corpus_files
+
+    counter = {"n": 0}
+
+    def create(files=None, name=None):
+        counter["n"] += 1
+        with db.session() as s:
+            project = s.projects.create(Project(name=name or f"proj{counter['n']}"))
+        svc = make_service()
+        for fname, data in (files or corpus_files()).items():
+            svc.ingest_bytes(project.id, fname, data)
+        return project.id
+
+    return create

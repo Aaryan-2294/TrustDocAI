@@ -1,0 +1,65 @@
+pipeline,query_id,category,query,first_relevant_rank,reciprocal_rank,recall@1,recall@3,recall@5,recall@10,latency_ms
+bm25,fn-1,exact_function_name,compute_backoff,1,1.0,1.0,1.0,1.0,1.0,1.637
+bm25,fn-2,exact_function_name,fetch_pending,1,1.0,1.0,1.0,1.0,1.0,3.726
+bm25,param-1,exact_parameter_name,delay_seconds,1,1.0,1.0,1.0,1.0,1.0,1.69
+bm25,param-2,exact_parameter_name,visibility_timeout,1,1.0,0.5,1.0,1.0,1.0,1.687
+bm25,sem-1,semantic_paraphrase,how do I make jobs that failed run again,1,1.0,0.5,0.5,0.5,1.0,2.674
+bm25,sem-2,semantic_paraphrase,stop the background threads without losing work that is in progress,1,1.0,1.0,1.0,1.0,1.0,1.963
+bm25,sem-3,semantic_paraphrase,reclaim disk space taken by finished jobs,1,1.0,0.5,1.0,1.0,1.0,1.666
+bm25,class-1,class_related,class that stores tasks durably in a SQLite database,1,1.0,1.0,1.0,1.0,1.0,1.86
+bm25,class-2,class_related,WorkerPool class,1,1.0,1.0,1.0,1.0,1.0,1.648
+bm25,doc-1,readme_documentation,how do I install the library,1,1.0,1.0,1.0,1.0,1.0,2.275
+bm25,doc-2,readme_documentation,which environment variables override the configuration file,1,1.0,1.0,1.0,1.0,1.0,1.793
+bm25,pdf-1,pdf_reference,at-least-once delivery guarantee,1,1.0,1.0,1.0,1.0,1.0,2.488
+bm25,pdf-2,pdf_reference,exponential backoff with full jitter and the 300 second cap,2,0.5,0.0,1.0,1.0,1.0,1.832
+bm25,pdf-3,pdf_reference,how long are completed tasks retained before deletion,1,1.0,1.0,1.0,1.0,1.0,1.835
+bm25,mixed-1,mixed_code_documentation,retry delay between attempts,1,1.0,0.3333,0.6667,1.0,1.0,1.714
+bm25,mixed-2,mixed_code_documentation,what happens when a worker crashes before acknowledging a task,1,1.0,0.5,0.5,0.5,0.5,1.765
+faiss,fn-1,exact_function_name,compute_backoff,1,1.0,1.0,1.0,1.0,1.0,1.821
+faiss,fn-2,exact_function_name,fetch_pending,1,1.0,1.0,1.0,1.0,1.0,1.686
+faiss,param-1,exact_parameter_name,delay_seconds,1,1.0,1.0,1.0,1.0,1.0,1.678
+faiss,param-2,exact_parameter_name,visibility_timeout,1,1.0,0.5,1.0,1.0,1.0,1.712
+faiss,sem-1,semantic_paraphrase,how do I make jobs that failed run again,2,0.5,0.0,0.5,1.0,1.0,1.645
+faiss,sem-2,semantic_paraphrase,stop the background threads without losing work that is in progress,4,0.25,0.0,0.0,1.0,1.0,1.792
+faiss,sem-3,semantic_paraphrase,reclaim disk space taken by finished jobs,2,0.5,0.0,1.0,1.0,1.0,1.694
+faiss,class-1,class_related,class that stores tasks durably in a SQLite database,1,1.0,1.0,1.0,1.0,1.0,1.776
+faiss,class-2,class_related,WorkerPool class,1,1.0,1.0,1.0,1.0,1.0,1.685
+faiss,doc-1,readme_documentation,how do I install the library,1,1.0,1.0,1.0,1.0,1.0,1.799
+faiss,doc-2,readme_documentation,which environment variables override the configuration file,1,1.0,1.0,1.0,1.0,1.0,1.709
+faiss,pdf-1,pdf_reference,at-least-once delivery guarantee,1,1.0,1.0,1.0,1.0,1.0,1.62
+faiss,pdf-2,pdf_reference,exponential backoff with full jitter and the 300 second cap,1,1.0,1.0,1.0,1.0,1.0,1.896
+faiss,pdf-3,pdf_reference,how long are completed tasks retained before deletion,1,1.0,1.0,1.0,1.0,1.0,1.706
+faiss,mixed-1,mixed_code_documentation,retry delay between attempts,1,1.0,0.3333,0.6667,1.0,1.0,1.756
+faiss,mixed-2,mixed_code_documentation,what happens when a worker crashes before acknowledging a task,1,1.0,0.5,0.5,0.5,0.5,1.685
+hybrid_rrf,fn-1,exact_function_name,compute_backoff,1,1.0,1.0,1.0,1.0,1.0,1.887
+hybrid_rrf,fn-2,exact_function_name,fetch_pending,1,1.0,1.0,1.0,1.0,1.0,1.905
+hybrid_rrf,param-1,exact_parameter_name,delay_seconds,1,1.0,1.0,1.0,1.0,1.0,1.93
+hybrid_rrf,param-2,exact_parameter_name,visibility_timeout,1,1.0,0.5,1.0,1.0,1.0,1.991
+hybrid_rrf,sem-1,semantic_paraphrase,how do I make jobs that failed run again,2,0.5,0.0,0.5,1.0,1.0,2.485
+hybrid_rrf,sem-2,semantic_paraphrase,stop the background threads without losing work that is in progress,1,1.0,1.0,1.0,1.0,1.0,2.281
+hybrid_rrf,sem-3,semantic_paraphrase,reclaim disk space taken by finished jobs,1,1.0,0.5,1.0,1.0,1.0,2.027
+hybrid_rrf,class-1,class_related,class that stores tasks durably in a SQLite database,1,1.0,1.0,1.0,1.0,1.0,2.706
+hybrid_rrf,class-2,class_related,WorkerPool class,1,1.0,1.0,1.0,1.0,1.0,2.136
+hybrid_rrf,doc-1,readme_documentation,how do I install the library,1,1.0,1.0,1.0,1.0,1.0,1.928
+hybrid_rrf,doc-2,readme_documentation,which environment variables override the configuration file,1,1.0,1.0,1.0,1.0,1.0,2.008
+hybrid_rrf,pdf-1,pdf_reference,at-least-once delivery guarantee,1,1.0,1.0,1.0,1.0,1.0,3.004
+hybrid_rrf,pdf-2,pdf_reference,exponential backoff with full jitter and the 300 second cap,1,1.0,1.0,1.0,1.0,1.0,2.201
+hybrid_rrf,pdf-3,pdf_reference,how long are completed tasks retained before deletion,1,1.0,1.0,1.0,1.0,1.0,2.116
+hybrid_rrf,mixed-1,mixed_code_documentation,retry delay between attempts,1,1.0,0.3333,0.6667,1.0,1.0,1.891
+hybrid_rrf,mixed-2,mixed_code_documentation,what happens when a worker crashes before acknowledging a task,1,1.0,0.5,0.5,0.5,0.5,2.765
+hybrid_rerank,fn-1,exact_function_name,compute_backoff,1,1.0,1.0,1.0,1.0,1.0,3.383
+hybrid_rerank,fn-2,exact_function_name,fetch_pending,1,1.0,1.0,1.0,1.0,1.0,4.041
+hybrid_rerank,param-1,exact_parameter_name,delay_seconds,1,1.0,1.0,1.0,1.0,1.0,3.664
+hybrid_rerank,param-2,exact_parameter_name,visibility_timeout,1,1.0,0.5,1.0,1.0,1.0,3.476
+hybrid_rerank,sem-1,semantic_paraphrase,how do I make jobs that failed run again,1,1.0,0.5,0.5,1.0,1.0,4.742
+hybrid_rerank,sem-2,semantic_paraphrase,stop the background threads without losing work that is in progress,1,1.0,1.0,1.0,1.0,1.0,3.832
+hybrid_rerank,sem-3,semantic_paraphrase,reclaim disk space taken by finished jobs,1,1.0,0.5,1.0,1.0,1.0,3.809
+hybrid_rerank,class-1,class_related,class that stores tasks durably in a SQLite database,1,1.0,1.0,1.0,1.0,1.0,3.558
+hybrid_rerank,class-2,class_related,WorkerPool class,1,1.0,1.0,1.0,1.0,1.0,3.468
+hybrid_rerank,doc-1,readme_documentation,how do I install the library,1,1.0,1.0,1.0,1.0,1.0,3.638
+hybrid_rerank,doc-2,readme_documentation,which environment variables override the configuration file,1,1.0,1.0,1.0,1.0,1.0,3.636
+hybrid_rerank,pdf-1,pdf_reference,at-least-once delivery guarantee,1,1.0,1.0,1.0,1.0,1.0,3.555
+hybrid_rerank,pdf-2,pdf_reference,exponential backoff with full jitter and the 300 second cap,1,1.0,1.0,1.0,1.0,1.0,3.704
+hybrid_rerank,pdf-3,pdf_reference,how long are completed tasks retained before deletion,1,1.0,1.0,1.0,1.0,1.0,3.554
+hybrid_rerank,mixed-1,mixed_code_documentation,retry delay between attempts,1,1.0,0.3333,0.6667,1.0,1.0,3.634
+hybrid_rerank,mixed-2,mixed_code_documentation,what happens when a worker crashes before acknowledging a task,1,1.0,0.5,0.5,0.5,0.5,3.628
