@@ -4,8 +4,8 @@
 
 > Every documentation claim should be supported by evidence.
 
-This repository is built in 8 sequential parts. **Current status: Part 4 - RAG Ask + Grounded Generation**
-(on top of Part 1 foundation, Part 2 ingestion and Part 3 retrieval). Generate/Verify workflows, claim verification, the Trust Score and the Streamlit UI do not exist yet.
+This repository is built in 8 sequential parts. **Current status: Part 5 - Documentation Verification & Trust Scoring**
+(on top of Parts 1-4). The Generate workflow and the Streamlit UI do not exist yet.
 
 ## Setup
 
@@ -35,7 +35,7 @@ Markdown ingestion work normally and ingesting a PDF raises a clear `MissingDepe
 
 `Settings.from_env()` layers: defaults < `.env` < real environment variables. All keys are
 prefixed `TRUSTDOC_` (see `.env.example`). Invalid values raise `ConfigError` at startup.
-Sections: `storage`, `logging`, `chunking`, `retrieval`, `llm`. Retrieval keys (Part 3): `EMBEDDING_MODEL`, `RERANKER_MODEL`, `CANDIDATE_K`, `FINAL_K`, `RRF_K`, `RELEVANCE_THRESHOLD` (0.0 = uncalibrated placeholder), `DEVICE` (default `cpu`), `EMBEDDING_BATCH_SIZE`. Indexes are stored under `<data_dir>/indexes`. The LLM section stores only the
+Sections: `storage`, `logging`, `chunking`, `retrieval`, `llm`. Retrieval keys (Part 3): `EMBEDDING_MODEL`, `RERANKER_MODEL`, `CANDIDATE_K`, `FINAL_K`, `RRF_K`, `RELEVANCE_THRESHOLD` (0.0 = uncalibrated placeholder), `DEVICE` (default `cpu`), `EMBEDDING_BATCH_SIZE`. Indexes are stored under `<data_dir>/indexes`. Verification keys (Part 5): `VERIFY_WEIGHT_ACCURACY/COVERAGE/GROUNDING`, `VERIFY_PENALTY_CRITICAL/HIGH/CAP`, `VERIFY_EVIDENCE_TOP_K`, `VERIFY_EVIDENCE_TYPES`, `VERIFY_MAX_SEMANTIC_CLAIMS` (see `.env.example`). The LLM section stores only the
 *name* of the environment variable holding an API key, never the key itself.
 
 ## Directory layout
@@ -63,7 +63,10 @@ trustdoc/
   llm/               base.py (LLMBackend, GenerationResult), ollama.py, hf_transformers.py,
                      stub.py (extractive stand-in), factory.py (create_llm, register_backend)
   workflows/         ask.py (AskService), prompts.py, citations.py, types.py, render.py
-examples/            retrieval_demo.py, ask_demo.py
+  verification/      extraction.py (claims from Markdown + docstrings), resolver.py, static_verifier.py (Tier 1),
+                     semantic_verifier.py (Tier 2, optional), scoring.py, findings.py (severity), typenorm.py,
+                     engine.py (orchestration + persistence), render.py, types.py
+examples/            retrieval_demo.py, ask_demo.py, verify_demo.py
 evaluation_results/  saved evaluation runs (see its README)
 tests/               pytest suite
 data/                runtime data (gitignored): trustdoc.db, uploads/, logs/
@@ -81,6 +84,8 @@ cli / (future Streamlit UI)
  Retriever ---> IndexManager (FAISS + BM25 in data/indexes) -> RRF -> Cross-Encoder -> Evidence
         |
  AskService ---> Retriever -> grounded prompt -> LLMBackend (Ollama | Transformers) -> checked citations
+        |
+ VerificationEngine ---> claims -> Tier 1 static (AST entities) -> [Tier 2 retrieval + optional LLM] -> findings + Trust Score -> DB
         |
         |
    Database.session()  -- one transaction per `with` block (commit / rollback)
@@ -568,17 +573,202 @@ is always `False` in Part 4; claim-level verification is Part 5.
 * One question at a time (no conversation memory), no streaming, English-centric prompts, and the token estimate
   is a rough characters/3 heuristic.
 
+## Documentation verification (Part 5)
+
+`VerificationEngine` extracts **claims** from Markdown documentation and Python docstrings and checks them against the
+project's code and evidence. It reports what is **contradicted** (the evidence says otherwise), what is **supported**,
+and what is **unverified** (not enough evidence) as three different things: *missing evidence is never treated as proof
+that a claim is false.* It does not eliminate hallucinations; it finds a class of documentation errors that can be decided
+from the code, and flags the rest for review.
+
+```
+documents (Markdown, docstrings, or supplied text)
+   -> claim extraction  (deterministic patterns + conservative rules; no LLM)
+   -> Tier 1  static verification against AST entities      (always on, deterministic)
+   -> Tier 2  semantic verification, behaviour/config claims only   (optional: --semantic, needs a local LLM)
+   -> documentation-coverage findings -> Trust Score -> one database transaction
+```
+
+### Two tiers
+
+| | Tier 1 - static | Tier 2 - semantic |
+|---|---|---|
+| Decides | Whether named entities exist; parameter names, defaults, kinds, order; return types vs annotations | Behaviour and configuration statements ("persists jobs to disk") |
+| How | `ast`-derived `CodeEntity` records from Part 2; no model, no retrieval | Part 3 retrieval of evidence from the same project + an optional local LLM |
+| Always runs | Yes | No: `--semantic`, a configured LLM and retrieval dependencies are all required |
+| Can the LLM decide it? | Never | Only through strict validation (below); never ground truth |
+
+Static claims are never sent to the LLM, and Tier 2 never runs for a claim Tier 1 already decided. Without a usable model the
+behaviour/config claims are `NOT_CHECKABLE` and every Tier 1 result is unaffected.
+
+### Claim categories and statuses
+
+Categories keep the existing enum names (`ClaimType`); the spec's names map as shown. Category and status are separate fields.
+
+| Category (`ClaimType`) | Meaning | Spec name | Checked by |
+|---|---|---|---|
+| `entity_reference` | A function/class/method that should exist (`` `retry_all()` ``, "the `Store` class") | ENTITY_EXISTS | Tier 1 |
+| `signature` | A documented signature (`` `def f(a, b=1) -> int` ``, `` `f(a, b=1)` ``) *(new in schema v2)* | SIGNATURE | Tier 1 |
+| `parameter` | "`f` accepts `a` and `b`", docstring Args sections, parameter tables under an entity heading | PARAMETER | Tier 1 |
+| `return` | "`f` returns a float", docstring Returns/rtype | RETURN_TYPE | Tier 1 |
+| `behavioral` | "`TaskQueue` persists jobs to disk" | BEHAVIOR | Tier 2 |
+| `config_dependency` | "`TASKQ_WORKER_COUNT` sets the number of workers" *(new)* | CONFIG_DEPENDENCY | Tier 2 |
+| `other` | Supplied claims that fit nothing else *(new; the extractors do not produce it)* | OTHER | Tier 2 |
+
+| Status (`ClaimVerdict`) | Meaning |
+|---|---|
+| `supported` | The evidence directly supports the claim |
+| `contradicted` | The evidence directly conflicts with the claim (**false**) |
+| `insufficient_evidence` | Checked, but the evidence cannot decide it (**unverified, not false**) |
+| `not_checkable` | Not checked in this run: semantic checks off/unavailable, external or standard-library name, example code *(new)* |
+
+### Running it
+
+```bash
+python -m trustdoc verify --project-id 1                       # all Markdown docs + docstrings, Tier 1 only
+python -m trustdoc verify --project my-project --document docs/API.md
+python -m trustdoc verify --project-id 1 --document-file NOTES.md   # ingest this file first, then verify it
+python -m trustdoc verify --project-id 1 --semantic             # also LLM-assisted checks (see "Semantic checks")
+python -m trustdoc verify --project-id 1 --json                 # full structured report
+python -m trustdoc verify --show-run 3                          # print a stored historical run
+python -m trustdoc verify --help
+python examples/verify_demo.py                                  # offline demo on the bundled sample project
+```
+
+Python: `VerificationEngine(db, settings).verify_project(project_id)`; `.verify_text(project_id, text)` verifies supplied text
+(for example an Ask answer or other generated documentation, stored as a Markdown source with `origin=generated`);
+`.list_runs(project_id)`; `.load_report(run_id)`.
+
+**Exit codes** (a finding is not a crash): `0` completed, nothing at or above `--fail-on`; `3` completed with documentation
+findings at or above `--fail-on` (default `high`; `--fail-on none` never fails; INFO never fails); `2` usage/configuration
+problem (unknown project, run or document, non-Markdown `--document`); `1` the run itself failed. Errors go to stderr.
+
+### What is (and is not) reported as wrong
+
+Tier 1 is deliberately conservative:
+
+* A documented **subset** of parameters is fine. Omissions are only reported when the documentation claims completeness
+  (a `def`-form signature, or "only"/"exactly").
+* `self`/`cls` are never required or reported. Call-like examples (`` `f(x, y)` ``) may use any variable names, so only keyword
+  names and the number of positional arguments are checked, and defaults are not compared.
+* A name is reported **nonexistent** only if it is attributable to the project (a "function/class/method" word, `()`, a signature, or a
+  name rooted in a project package). Otherwise it is *unverified*. Imports, assignments and `__all__` entries (aliases, re-exports),
+  ambiguous names, classes without an explicit `__init__` (dataclasses, inherited), and callables with decorators that may change
+  their signature (anything outside a small allow-list such as `staticmethod`, `property`, `lru_cache`) are *unverified*,
+  never contradicted. Builtin/standard-library/third-party-looking names and names in example code are `not_checkable`.
+* A return type is compared with the source annotation after normalisation (`Optional[int]` = `int | None`, `List[x]` = `list[x]`).
+  **No annotation means `insufficient_evidence`**; types are never inferred. `bool`/`int`, aliases and user-defined names are not
+  declared mismatches.
+* Missing documentation is a **coverage finding**, not a hallucination: public classes/functions/methods (the Part 2 rules:
+  underscore names, dunders and nested definitions are not public) with neither a docstring nor a mention in the verified documents.
+
+### Severity
+
+| Severity | Used for |
+|---|---|
+| `critical` | A documented *signature* that would break callers: nonexistent API, a parameter that does not exist, a required parameter omitted |
+| `high` | Other wrong API claims: nonexistent entity or wrong parameter in prose, wrong default/annotation, wrong return type, positional/keyword-only conflicts |
+| `medium` | A behavioural contradiction found by the semantic tier; missing docs on a public class or a callable with arguments |
+| `low` | Optional parameters left out of a "complete" list, parameters missing from a docstring Args section, missing docs on a no-argument callable |
+| `info` | Unverified claims (insufficient evidence). Never a proven defect; never raised just because evidence is missing |
+
+A call-like mention (not a real signature) is never `critical`. Suggestions are evidence-based: they quote the actual signature or
+annotation, offer a "did you mean" only for a close match, and otherwise recommend review. A model's suggested wording, when any,
+is labelled unverified.
+
+### Trust Score (0-100)
+
+```
+accuracy  = supported / (supported + contradicted + insufficient_evidence)        over claims that were checked
+coverage  = public entities with a docstring or a mention / all public entities
+grounding = checked claims that are supported or contradicted AND have >= 1 evidence reference / checked claims
+
+base      = 100 x (w_a*accuracy + w_c*coverage + w_g*grounding) / (sum of the weights of the available components)
+penalty   = min(40, 10 x critical_contradictions + 5 x high_contradictions)        # contradictions only
+score     = clamp(base - penalty, 0, 100)             defaults: w = 0.50 / 0.25 / 0.25  (TRUSTDOC_VERIFY_*)
+```
+
+* **Insufficient evidence is never counted as correct**: it stays in the accuracy denominator and has no evidence, so it also lowers
+  grounding. `not_checkable` claims are excluded and reported (see "Skipped checks").
+* **A score needs at least one checked claim.** With none, the score is *not measurable* and coverage is shown as an
+  informational, unscored figure (coverage alone would say nothing about whether the documentation is correct).
+* A component with no denominator (no public entities, or coverage not measured, e.g. when verifying supplied text) is *unavailable*:
+  dropped and the other weights renormalised; no value is invented. Contradictions found by the semantic tier (MEDIUM) are not penalised.
+* The breakdown (value, effective weight, contribution, denominators) is printed, returned, and stored with the run.
+
+Worked example: 8 supported, 1 contradicted, 1 insufficient of 10 checked; 9 grounded; 7 of 10 entities documented; one HIGH
+contradiction: accuracy 0.8, coverage 0.7, grounding 0.9, so base = 100 x (0.5x0.8 + 0.25x0.7 + 0.25x0.9) = 80, penalty 5, score **75**.
+
+### Semantic checks (optional, never ground truth)
+
+`--semantic` retrieves evidence for each behaviour/config claim with the Part 3 retriever (this project only) and asks the configured
+local LLM (the Part 4 backends) to classify it using **only** that evidence. Safeguards:
+
+* the claim's own document can never be its evidence; by default only code and PDF material may be (`TRUSTDOC_VERIFY_EVIDENCE_TYPES`);
+* no usable evidence means `insufficient_evidence` and the model is not called; silence in the evidence is not a contradiction;
+* the model must return one JSON object with a verdict (`supported`, `contradicted` or `insufficient_evidence` only), a short explanation,
+  and evidence IDs that were actually supplied; supported/contradicted need at least one. Malformed, ambiguous, conflicting or
+  fabricated-ID output is **rejected** and recorded as `insufficient_evidence`; evidence IDs map back to real chunks;
+* results are marked model-assisted, their confidence is not stored, and the claim and evidence are fenced as untrusted text;
+* at most `TRUSTDOC_VERIFY_MAX_SEMANTIC_CLAIMS` (25) claims per run, because local CPU inference is slow.
+
+An LLM verdict is a lead for a human reviewer, not a fact. Quality of the verdicts is **not evaluated** here.
+
+### Findings and citations
+
+Each finding has a stable `uid`, the claim's `uid`, category, status, severity, a message, the **documentation location**
+(`README.md:21`), the **code location** (`pkg/a.py:10`), evidence citations (logical labels such as `pkg/a.py:10-24` or `reference.pdf, p.3`;
+never filesystem paths), and a suggestion. Claim `uid`s are derived from the document name, category and normalised text, so they are
+reproducible and independent of line numbers. Findings snapshot their claim text and locations, so history stays readable even if a
+document is later replaced. Read `INFO` items as "please check", `LOW`/`MEDIUM` as gaps, `HIGH`/`CRITICAL` as probable errors.
+
+### Persistence, history and schema v2
+
+Everything uses the existing tables: `claims`, `verification_runs`, `claim_results`, `evidence_links`, `findings`,
+`trust_score_components`. A run is computed fully in memory and written in **one transaction**; a failure leaves no partial data
+(the failed run itself is recorded as `failed` with its error). Each `verify` creates a new run; old runs are never modified, identical
+claims are reused rather than duplicated, and `load_report(run_id)` rebuilds any past report.
+
+**Schema v2** was unavoidable: the CHECK constraints could not store `signature`/`config_dependency`/`other` claims, the
+`not_checkable` status, or `info` severity. `Database.initialize()` upgrades v1 databases automatically with SQLite's table-rebuild
+procedure for the three affected tables (`claims`, `claim_results`, `findings`): one transaction, foreign keys verified before commit,
+rolled back on any failure; rows, ids, relationships, indexes and id sequences are preserved (tested against genuine v1 databases).
+There is no downgrade. Caveat (existing Part 2 behaviour): replacing a document deletes its claims, which cascades to their results in
+older runs; older runs' *findings* and scores remain intact and readable.
+
+### Known limitations and false-positive risks
+
+* Claim extraction is pattern/rule based and misses many claims; behaviour extraction can include sentences that are not really claims and
+  skips imperative, hedged, conditional and second-person text. There is no LLM-assisted extraction. Parameter tables/lists are only read under
+  a "Parameters"/"Arguments" heading that names an entity.
+* Static checks see only indexed Python source: dynamic definitions (`setattr`, metaprogramming), inherited or generated signatures,
+  dataclasses, and third-party APIs are unverified or not checkable. Call-like examples can still be mis-read.
+* A nonexistent-entity verdict rests on absence from the index; incomplete ingestion can cause one. Add missing sources and re-run.
+* Documentation coverage counts a mention in the verified documents as documentation, which is coarse.
+* The retrieval threshold is still the uncalibrated placeholder `0.0` and the real embedder/Cross-Encoder and LLM backends have not been
+  validated end to end, so semantic results are unevaluated. The Trust Score is a transparent heuristic, not a calibrated probability.
+
+### Running the tests without a model
+
+All verification tests use constructed code entities, a fake retriever or the Part 3 stand-ins, and scripted mock LLMs; nothing is downloaded:
+
+```bash
+pytest tests/test_verify_*.py tests/test_schema_v2_migration.py        # Part 5
+pytest                                                                  # everything
+```
+
 ## Tests
 
 ```bash
 pip install -e ".[dev,pdf,retrieval]"
-pytest                                    # everything (see the count in the Part 4 test run)
+pytest                                    # everything
 pytest tests/test_retrieval_fusion.py tests/test_retrieval_threshold.py tests/test_faiss_index.py \
        tests/test_bm25_index.py tests/test_index_manager.py tests/test_retriever.py \
        tests/test_retrieval_integration.py tests/test_evaluation.py     # Part 3 core
 pytest tests/test_ask_prompts.py tests/test_ask_citations.py tests/test_ask_workflow.py \
        tests/test_llm_factory_config.py tests/test_ollama_backend.py tests/test_transformers_backend.py \
        tests/test_stub_llm.py tests/test_ask_cli.py tests/test_ask_integration.py    # Part 4
+pytest tests/test_verify_*.py tests/test_schema_v2_migration.py                  # Part 5
 pytest --cov=trustdoc                     # with coverage
 ```
 
@@ -592,5 +782,6 @@ rank_bm25 / PyMuPDF are skipped.
 1. Foundation & data model - done
 2. Source & document ingestion - done
 3. Knowledge base & hybrid retrieval - done
-4. RAG Ask + grounded generation - done (this part)
-5-8. VERIFY (claim extraction, Tier 1 / Tier 2, Trust Score), GENERATE, UI, final evaluation - one part at a time.
+4. RAG Ask + grounded generation - done
+5. Documentation verification + Trust Score - done (this part)
+6-8. GENERATE, UI, final evaluation - one part at a time.

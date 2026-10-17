@@ -5,7 +5,7 @@ from ask_support import FakeRetriever, ScriptedLLM, make_evidence, make_search_r
 
 from trustdoc.cli import main
 from trustdoc.config import Settings
-from trustdoc.db import Database
+from trustdoc.db import SCHEMA_VERSION, Database
 from trustdoc.exceptions import LLMTimeoutError, MissingDependencyError, RetrievalError
 from trustdoc.models import Project
 from trustdoc.workflows import AskService
@@ -171,4 +171,4 @@ def test_existing_commands_still_work(cli_env, capsys):
     assert main(["info"]) == 0
     out = capsys.readouterr().out
     info = json.loads(out[out.index("{"):])
-    assert info["schema_version"] == 1 and "ask" in info["settings"] and info["settings"]["llm"]["provider"] == "none"
+    assert info["schema_version"] == SCHEMA_VERSION and "ask" in info["settings"] and info["settings"]["llm"]["provider"] == "none"

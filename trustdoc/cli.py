@@ -80,6 +80,60 @@ def _ask(args: argparse.Namespace) -> int:
     return 0
 
 
+def _verify(args: argparse.Namespace) -> int:
+    """Verify documentation against the project's code.
+
+    Exit codes: 0 completed, no findings at/above --fail-on; 3 completed, documentation findings at/above
+    --fail-on (a documentation problem, NOT a crash); 2 usage/configuration problem (unknown project or
+    document, ...); 1 operational failure (the verification run itself failed).
+    """
+    from trustdoc.exceptions import NotFoundError, VerificationError
+    from trustdoc.ingestion import IngestionService
+    from trustdoc.models import Severity
+    from trustdoc.verification import VerificationEngine, render_report
+
+    settings = Settings.from_env()
+    if args.provider or args.model:
+        llm_cfg = dataclasses.replace(
+            settings.llm, provider=args.provider or settings.llm.provider,
+            model=args.model if args.model is not None else settings.llm.model)
+        settings = dataclasses.replace(settings, llm=llm_cfg)
+    ctx = bootstrap(settings)
+    engine = VerificationEngine(ctx.db, ctx.settings)
+
+    try:
+        if args.show_run is not None:
+            report = engine.load_report(args.show_run)
+            if args.project_id is not None and report.project_id != args.project_id:
+                raise NotFoundError(f"Run {args.show_run} does not belong to project {args.project_id}")
+        else:
+            project_id = args.project_id
+            if project_id is None:
+                with ctx.db.session() as s:
+                    project = s.projects.get_by_name(args.project)
+                if project is None:
+                    raise NotFoundError(f"No project named {args.project!r}")
+                project_id = project.id
+            documents = list(args.document or [])
+            for path in args.document_file or []:
+                documents.append(IngestionService(ctx.db, ctx.settings).ingest_file(project_id, path).source.name)
+            report = engine.verify_project(project_id, documents=documents or None,
+                                           include_docstrings=not args.no_docstrings, semantic=args.semantic)
+    except VerificationError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(json.dumps(report.to_dict(), indent=2))
+    else:
+        print(render_report(report, max_per_severity=args.max_findings))
+    if args.fail_on != "none":
+        worst = report.max_severity()
+        if worst is not None and worst.rank >= Severity(args.fail_on).rank:
+            return 3
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="trustdoc", description="TrustDoc AI command-line tools")
     parser.add_argument("--version", action="version", version=f"trustdoc {__version__}")
@@ -113,16 +167,44 @@ def main(argv: Sequence[str] | None = None) -> int:
     ask.add_argument("--model", default=None, help="override TRUSTDOC_LLM_MODEL")
     ask.add_argument("--show-evidence", action="store_true", help="also print short snippets of the evidence used")
     ask.add_argument("--json", action="store_true", help="print the full structured result as JSON")
+    ver = sub.add_parser(
+        "verify",
+        help="check documentation against the code: contradictions, unverified claims, missing docs, Trust Score",
+        description="Extract claims from Markdown documentation and Python docstrings and verify them. Tier 1 (always on) is "
+                    "deterministic static analysis of the indexed code. Tier 2 (--semantic) is optional, LLM-assisted and uses "
+                    "retrieved evidence; it needs a configured local LLM and is never ground truth. Missing evidence is reported "
+                    "as 'insufficient evidence', never as 'false'.",
+    )
+    vt = ver.add_mutually_exclusive_group()
+    vt.add_argument("--project-id", type=int, help="id of the project to verify")
+    vt.add_argument("--project", help="name of the project to verify")
+    ver.add_argument("--document", action="append", metavar="NAME",
+                     help="verify only this already-ingested Markdown source (project-relative name); repeatable")
+    ver.add_argument("--document-file", action="append", metavar="PATH",
+                     help="ingest this Markdown file into the project first, then verify it; repeatable")
+    ver.add_argument("--no-docstrings", action="store_true", help="do not check Python docstrings")
+    ver.add_argument("--semantic", action="store_true", help="also run LLM-assisted semantic checks on behaviour/config claims")
+    ver.add_argument("--provider", default=None, help="override TRUSTDOC_LLM_PROVIDER (semantic checks only)")
+    ver.add_argument("--model", default=None, help="override TRUSTDOC_LLM_MODEL (semantic checks only)")
+    ver.add_argument("--fail-on", choices=["none", "critical", "high", "medium", "low"], default="high",
+                     help="exit with status 3 if any finding at or above this severity exists (default: high; INFO never fails)")
+    ver.add_argument("--max-findings", type=int, default=10, help="findings shown per severity (default 10)")
+    ver.add_argument("--show-run", type=int, metavar="RUN_ID", help="print a stored historical run instead of verifying again")
+    ver.add_argument("--json", action="store_true", help="print the full structured report as JSON")
     args = parser.parse_args(argv)
+    if args.command == "verify" and not args.show_run and args.project_id is None and not args.project:
+        parser.error("verify needs --project-id or --project (or --show-run RUN_ID)")
 
     try:
         if args.command == "eval-retrieval":
             return _eval_retrieval(args)
         if args.command == "ask":
             return _ask(args)
+        if args.command == "verify":
+            return _verify(args)
         ctx = bootstrap(Settings.from_env())
     except TrustDocError as exc:
-        print(f"error: {exc}", file=sys.stderr if args.command == "ask" else sys.stdout)
+        print(f"error: {exc}", file=sys.stderr if args.command in ("ask", "verify") else sys.stdout)
         return 2
 
     if args.command == "init":

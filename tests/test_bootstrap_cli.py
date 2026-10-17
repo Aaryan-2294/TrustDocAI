@@ -1,6 +1,7 @@
 import json
 
 from trustdoc.app import bootstrap
+from trustdoc.db import SCHEMA_VERSION
 from trustdoc.cli import main
 from trustdoc.logging_setup import ROOT_LOGGER_NAME
 import logging
@@ -33,7 +34,7 @@ def test_cli_init_and_info(tmp_path, monkeypatch, capsys):
         assert main(["info"]) == 0
         out = capsys.readouterr().out
         payload = json.loads(out[out.index("{"):])
-        assert payload["schema_version"] == 1
+        assert payload["schema_version"] == SCHEMA_VERSION
         assert payload["table_counts"]["projects"] == 0
     finally:
         _cleanup_logging()

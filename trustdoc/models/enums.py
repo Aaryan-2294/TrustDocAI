@@ -43,6 +43,10 @@ class ClaimType(str, Enum):
     PARAMETER = "parameter"                # statements about parameters
     RETURN = "return"                      # statements about return values
     BEHAVIORAL = "behavioral"              # what the code does (Tier 2)
+    # added in schema v2 (Part 5)
+    SIGNATURE = "signature"                # a documented signature, e.g. `f(a, b=1) -> int`
+    CONFIG_DEPENDENCY = "config_dependency"  # env vars / config keys the code is said to use (Tier 2)
+    OTHER = "other"                        # supplied claims that fit no other category (Tier 2)
 
 
 class ClaimOrigin(str, Enum):
@@ -59,6 +63,9 @@ class ClaimVerdict(str, Enum):
     SUPPORTED = "supported"
     CONTRADICTED = "contradicted"
     INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+    # added in schema v2: the engine could not check this claim in this run (capability
+    # unavailable/disabled, external API, example code). Distinct from "checked but undecided".
+    NOT_CHECKABLE = "not_checkable"
 
 
 class EvidenceStance(str, Enum):
@@ -82,6 +89,7 @@ class IssueType(str, Enum):
 
 
 class Severity(str, Enum):
+    INFO = "info"          # added in schema v2: unverified / informational, not a proven defect
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -92,7 +100,7 @@ class Severity(str, Enum):
         return _SEVERITY_ORDER.index(self)
 
 
-_SEVERITY_ORDER = [Severity.LOW, Severity.MEDIUM, Severity.HIGH, Severity.CRITICAL]
+_SEVERITY_ORDER = [Severity.INFO, Severity.LOW, Severity.MEDIUM, Severity.HIGH, Severity.CRITICAL]
 
 
 class RunStatus(str, Enum):

@@ -82,6 +82,21 @@ class AskConfig:
 
 
 @dataclass(frozen=True)
+class VerificationConfig:
+    """Documentation verification and Trust Score parameters (Part 5)."""
+
+    weight_accuracy: float = 0.50       # relative weights; unavailable components are dropped and the
+    weight_coverage: float = 0.25       # remaining weights renormalised (see verification/scoring.py)
+    weight_grounding: float = 0.25
+    penalty_critical: float = 10.0      # points subtracted per CRITICAL contradiction finding
+    penalty_high: float = 5.0           # points subtracted per HIGH contradiction finding
+    penalty_cap: float = 40.0           # maximum total severity penalty
+    evidence_top_k: int = 5             # evidence chunks shown to the semantic verifier per claim
+    evidence_source_types: tuple[str, ...] = ("python", "pdf")   # what may serve as evidence
+    max_semantic_claims: int = 25       # cap on LLM-checked claims per run (CPU cost)
+
+
+@dataclass(frozen=True)
 class Settings:
     storage: StorageConfig
     logging: LoggingConfig = field(default_factory=LoggingConfig)
@@ -89,6 +104,7 @@ class Settings:
     retrieval: RetrievalConfig = field(default_factory=RetrievalConfig)
     llm: LLMConfig = field(default_factory=LLMConfig)
     ask: AskConfig = field(default_factory=AskConfig)
+    verification: VerificationConfig = field(default_factory=VerificationConfig)
 
     # ------------------------------------------------------------------ build
     @classmethod
@@ -181,7 +197,24 @@ class Settings:
                 get("ASK_MAX_QUESTION_CHARS", a.max_question_chars), "ASK_MAX_QUESTION_CHARS"),
         )
 
-        settings = cls(storage, logging_cfg, chunking, retrieval, llm, ask)
+        v = VerificationConfig()
+        types = tuple(
+            x.strip().lower() for x in str(get("VERIFY_EVIDENCE_TYPES", ",".join(v.evidence_source_types))).split(",")
+            if x.strip()
+        )
+        verification = VerificationConfig(
+            weight_accuracy=_as_float(get("VERIFY_WEIGHT_ACCURACY", v.weight_accuracy), "VERIFY_WEIGHT_ACCURACY"),
+            weight_coverage=_as_float(get("VERIFY_WEIGHT_COVERAGE", v.weight_coverage), "VERIFY_WEIGHT_COVERAGE"),
+            weight_grounding=_as_float(get("VERIFY_WEIGHT_GROUNDING", v.weight_grounding), "VERIFY_WEIGHT_GROUNDING"),
+            penalty_critical=_as_float(get("VERIFY_PENALTY_CRITICAL", v.penalty_critical), "VERIFY_PENALTY_CRITICAL"),
+            penalty_high=_as_float(get("VERIFY_PENALTY_HIGH", v.penalty_high), "VERIFY_PENALTY_HIGH"),
+            penalty_cap=_as_float(get("VERIFY_PENALTY_CAP", v.penalty_cap), "VERIFY_PENALTY_CAP"),
+            evidence_top_k=_as_int(get("VERIFY_EVIDENCE_TOP_K", v.evidence_top_k), "VERIFY_EVIDENCE_TOP_K"),
+            evidence_source_types=types,
+            max_semantic_claims=_as_int(get("VERIFY_MAX_SEMANTIC_CLAIMS", v.max_semantic_claims), "VERIFY_MAX_SEMANTIC_CLAIMS"),
+        )
+
+        settings = cls(storage, logging_cfg, chunking, retrieval, llm, ask, verification)
         settings.validate()
         return settings
 
@@ -219,6 +252,19 @@ class Settings:
             raise ConfigError("ASK_MAX_EVIDENCE_CHARS must be at least 200")
         if ask.max_question_chars <= 0:
             raise ConfigError("ASK_MAX_QUESTION_CHARS must be positive")
+        v = self.verification
+        weights = (v.weight_accuracy, v.weight_coverage, v.weight_grounding)
+        if any(w < 0 for w in weights) or sum(weights) <= 0:
+            raise ConfigError("VERIFY_WEIGHT_* must be non-negative and not all zero")
+        if min(v.penalty_critical, v.penalty_high, v.penalty_cap) < 0:
+            raise ConfigError("VERIFY_PENALTY_* must be non-negative")
+        if v.evidence_top_k <= 0:
+            raise ConfigError("VERIFY_EVIDENCE_TOP_K must be positive")
+        if v.max_semantic_claims < 0:
+            raise ConfigError("VERIFY_MAX_SEMANTIC_CLAIMS must not be negative")
+        bad = [x for x in v.evidence_source_types if x not in ("python", "markdown", "pdf")]
+        if bad or not v.evidence_source_types:
+            raise ConfigError("VERIFY_EVIDENCE_TYPES must list one or more of: python, markdown, pdf")
 
     @property
     def log_level_int(self) -> int:

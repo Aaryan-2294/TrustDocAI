@@ -90,8 +90,12 @@ class Database:
         try:
             for version in sorted(v for v in MIGRATIONS if v > current):
                 log.info("Applying schema migration v%d", version)
-                conn.executescript(MIGRATIONS[version])
-                conn.execute(f"PRAGMA user_version = {version}")
+                migration = MIGRATIONS[version]
+                if callable(migration):          # transactional Python migration (v2+)
+                    migration(conn)
+                else:
+                    conn.executescript(migration)
+                    conn.execute(f"PRAGMA user_version = {version}")
             conn.commit()
         finally:
             conn.close()

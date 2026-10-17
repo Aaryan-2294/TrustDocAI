@@ -90,3 +90,15 @@ class LLMResponseError(LLMError):
 
 class LLMEmptyOutputError(LLMResponseError):
     """The model returned no text."""
+
+
+# ------------------------------------------------------------------ verification
+class VerificationError(TrustDocError):
+    """Documentation verification could not be completed."""
+
+
+class DocumentSelectionError(TrustDocError):
+    """A requested document is unknown or is not a Markdown documentation source.
+
+    A usage error, deliberately NOT a VerificationError (which signals that a run itself failed).
+    """
