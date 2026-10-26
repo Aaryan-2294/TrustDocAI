@@ -134,6 +134,7 @@ def main() -> None:
                             st.success("Project deleted.")
                             st.rerun()
                         except Exception as exc:  # noqa: BLE001
+                            st.session_state["active_project_id"] = 0
                             st.error(f"Failed to delete project: {exc}")
 
         st.divider()

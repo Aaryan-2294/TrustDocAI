@@ -108,7 +108,9 @@ def delete_project(
     """Delete a project and clean up its database records, uploaded files, and indexes.
 
     Transaction ordering guarantees that files on disk are removed only after database
-    records have been successfully deleted and committed.
+    records have been successfully deleted and committed. Cleanup operations for uploaded
+    files and index artifacts are executed independently so failure in one does not block
+    the other. Any cleanup errors are aggregated with actionable path details.
     """
     if isinstance(target, AppContext):
         db = target.db
@@ -124,20 +126,39 @@ def delete_project(
             return False
         s.projects.delete(project_id)
 
+    cleanup_errors: list[str] = []
+
     # 2. Filesystem cleanup of uploaded files
     upload_store = store or UploadStore(settings.storage.uploads_dir)
-    upload_store.delete_project(project_id)
+    try:
+        upload_store.delete_project(project_id)
+    except Exception as exc:  # noqa: BLE001
+        proj_upload_dir = upload_store.project_dir(project_id)
+        cleanup_errors.append(f"upload directory ({proj_upload_dir}): {exc}")
 
-    # 3. Cleanup of persisted and in-memory indexes
-    if index_manager is not None:
-        index_manager.delete(project_id)
-    else:
-        idx_dir = (Path(settings.storage.indexes_dir) / f"project_{int(project_id)}").resolve()
-        if idx_dir.is_dir() and idx_dir.is_relative_to(Path(settings.storage.indexes_dir).resolve()):
-            try:
+    # 3. Cleanup of persisted and in-memory indexes (attempted even if upload cleanup failed)
+    try:
+        if index_manager is not None:
+            index_manager.delete(project_id)
+        else:
+            idx_dir = (Path(settings.storage.indexes_dir) / f"project_{int(project_id)}").resolve()
+            if idx_dir.is_dir() and idx_dir.is_relative_to(Path(settings.storage.indexes_dir).resolve()):
                 shutil.rmtree(idx_dir)
-            except OSError as exc:
-                raise CleanupError(f"Failed to delete index directory for project {project_id}: {exc}") from exc
+    except Exception as exc:  # noqa: BLE001
+        idx_path = (
+            index_manager.index_dir(project_id)
+            if index_manager is not None
+            else (Path(settings.storage.indexes_dir) / f"project_{int(project_id)}")
+        )
+        cleanup_errors.append(f"index directory ({idx_path}): {exc}")
+
+    if cleanup_errors:
+        err_msg = (
+            f"Project {project_id} database records were deleted, but filesystem cleanup failed for: "
+            + "; ".join(cleanup_errors)
+            + ". These remaining paths can be cleaned up or retried safely."
+        )
+        raise CleanupError(err_msg)
 
     return True
 
@@ -158,7 +179,12 @@ def delete_source(
     store: UploadStore | None = None,
     index_manager: IndexManager | None = None,
 ) -> bool:
-    """Delete a single source, remove its stored upload if unreferenced, and invalidate index."""
+    """Delete a single source, remove its stored upload if unreferenced, and invalidate index.
+
+    Cleanup operations for stored upload files and project indexes are executed independently
+    so failure in file cleanup does not prevent index invalidation. Any cleanup errors are
+    aggregated with actionable path details.
+    """
     if isinstance(target, AppContext):
         db = target.db
         settings = settings or target.settings
@@ -185,22 +211,42 @@ def delete_source(
             ).fetchone()[0]
             still_used = remaining > 0
 
+    cleanup_errors: list[str] = []
+
     # 2. Cleanup stored file if no remaining source references it
     if stored_path and not still_used:
         upload_store = store or UploadStore(settings.storage.uploads_dir)
-        upload_store.delete(stored_path)
+        try:
+            upload_store.delete(stored_path)
+        except Exception as exc:  # noqa: BLE001
+            resolved_file = upload_store.resolve(stored_path)
+            cleanup_errors.append(f"stored file ({resolved_file}): {exc}")
 
     # 3. Invalidate or remove the project's index so the next retrieval rebuilds it
+    # (attempted even if stored-file cleanup failed)
     if project_id is not None:
-        if index_manager is not None:
-            index_manager.delete(project_id)
-        else:
-            idx_dir = (Path(settings.storage.indexes_dir) / f"project_{int(project_id)}").resolve()
-            if idx_dir.is_dir() and idx_dir.is_relative_to(Path(settings.storage.indexes_dir).resolve()):
-                try:
+        try:
+            if index_manager is not None:
+                index_manager.delete(project_id)
+            else:
+                idx_dir = (Path(settings.storage.indexes_dir) / f"project_{int(project_id)}").resolve()
+                if idx_dir.is_dir() and idx_dir.is_relative_to(Path(settings.storage.indexes_dir).resolve()):
                     shutil.rmtree(idx_dir)
-                except OSError as exc:
-                    raise CleanupError(f"Failed to delete index directory for project {project_id}: {exc}") from exc
+        except Exception as exc:  # noqa: BLE001
+            idx_path = (
+                index_manager.index_dir(project_id)
+                if index_manager is not None
+                else (Path(settings.storage.indexes_dir) / f"project_{int(project_id)}")
+            )
+            cleanup_errors.append(f"index directory ({idx_path}): {exc}")
+
+    if cleanup_errors:
+        err_msg = (
+            f"Source {source_id} database records were deleted, but cleanup failed for: "
+            + "; ".join(cleanup_errors)
+            + ". These remaining paths can be cleaned up or retried safely."
+        )
+        raise CleanupError(err_msg)
 
     return True
 

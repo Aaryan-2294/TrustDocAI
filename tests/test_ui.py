@@ -266,8 +266,99 @@ def test_delete_source_shared_stored_path(tmp_path):
     assert not upload_file.exists()  # Cleaned up!
 
 
-def test_cleanup_failure_raises_explicit_error(tmp_path):
-    """Cleanup failures raise CleanupError explicitly and are not swallowed."""
+def test_delete_project_upload_failure_still_cleans_index(tmp_path):
+    """If upload cleanup fails during project deletion, index cleanup is still attempted."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.exceptions import CleanupError
+    from trustdoc.ingestion import IngestionService
+    from trustdoc.retrieval.embedding import HashingEmbedder
+    from trustdoc.retrieval.index_manager import IndexManager
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    store = UploadStore(settings.storage.uploads_dir)
+    idx_mgr = IndexManager(ctx.db, settings, HashingEmbedder())
+    ingest_svc = IngestionService(ctx.db, settings)
+
+    proj = create_project(ctx.db, "fail-up-proj")
+    ingest_svc.ingest_bytes(proj.id, "m.py", b"def f(): pass\n")
+    idx_mgr.build(proj.id)
+
+    assert idx_mgr.index_dir(proj.id).is_dir()
+    assert proj.id in idx_mgr._cache
+
+    mock_store = MagicMock()
+    mock_store.project_dir.return_value = store.project_dir(proj.id)
+    mock_store.delete_project.side_effect = CleanupError("Permission denied on uploads")
+
+    with pytest.raises(CleanupError) as exc_info:
+        delete_project(ctx, proj.id, store=mock_store, index_manager=idx_mgr)
+
+    # 1. Error message identifies the failed upload task and remaining safe retry path
+    assert "Permission denied on uploads" in str(exc_info.value)
+    assert str(store.project_dir(proj.id)) in str(exc_info.value)
+    assert "retried safely" in str(exc_info.value)
+
+    # 2. Database project record was deleted
+    assert get_project(ctx.db, proj.id) is None
+
+    # 3. Index invalidation was STILL attempted and succeeded!
+    assert not idx_mgr.index_dir(proj.id).exists()
+    assert proj.id not in idx_mgr._cache
+
+
+def test_delete_source_upload_failure_still_invalidates_index(tmp_path):
+    """If stored upload cleanup fails during source deletion, index invalidation is still attempted."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.exceptions import CleanupError
+    from trustdoc.ingestion import IngestionService
+    from trustdoc.retrieval.embedding import HashingEmbedder
+    from trustdoc.retrieval.index_manager import IndexManager
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    store = UploadStore(settings.storage.uploads_dir)
+    idx_mgr = IndexManager(ctx.db, settings, HashingEmbedder())
+    ingest_svc = IngestionService(ctx.db, settings)
+
+    proj = create_project(ctx.db, "fail-src-up-proj")
+    res = ingest_svc.ingest_bytes(proj.id, "single.py", b"def single(): pass\n")
+    idx_mgr.build(proj.id)
+
+    assert idx_mgr.index_dir(proj.id).is_dir()
+    assert proj.id in idx_mgr._cache
+
+    mock_store = MagicMock()
+    mock_store.resolve.return_value = store.resolve(res.source.stored_path)
+    mock_store.delete.side_effect = CleanupError("Permission denied on file")
+
+    with pytest.raises(CleanupError) as exc_info:
+        delete_source(ctx, res.source.id, store=mock_store, index_manager=idx_mgr)
+
+    # 1. Error message identifies the failed stored file task and remaining safe retry path
+    assert "Permission denied on file" in str(exc_info.value)
+    assert str(store.resolve(res.source.stored_path)) in str(exc_info.value)
+    assert "retried safely" in str(exc_info.value)
+
+    # 2. Source record in DB was deleted
+    with ctx.db.session() as s:
+        assert s.sources.get(res.source.id) is None
+
+    # 3. Index invalidation was STILL attempted and succeeded!
+    assert not idx_mgr.index_dir(proj.id).exists()
+    assert proj.id not in idx_mgr._cache
+
+
+def test_delete_project_both_fail_aggregates_errors(tmp_path):
+    """When both upload and index cleanups fail, all errors are aggregated."""
     from trustdoc.app import bootstrap
     from trustdoc.config import Settings
     from trustdoc.exceptions import CleanupError
@@ -277,14 +368,24 @@ def test_cleanup_failure_raises_explicit_error(tmp_path):
         "TRUSTDOC_LOG_TO_FILE": "false",
     })
     ctx = bootstrap(settings)
-    proj = create_project(ctx.db, "fail-proj")
+    proj = create_project(ctx.db, "dual-fail-proj")
 
-    # Mock store to fail on delete_project
     mock_store = MagicMock()
-    mock_store.delete_project.side_effect = CleanupError("Permission denied on uploads")
+    mock_store.project_dir.return_value = Path("uploads/project_1")
+    mock_store.delete_project.side_effect = CleanupError("Store failure")
 
-    with pytest.raises(CleanupError, match="Permission denied on uploads"):
-        delete_project(ctx, proj.id, store=mock_store)
+    mock_idx_mgr = MagicMock()
+    mock_idx_mgr.index_dir.return_value = Path("indexes/project_1")
+    mock_idx_mgr.delete.side_effect = CleanupError("Index failure")
+
+    with pytest.raises(CleanupError) as exc_info:
+        delete_project(ctx, proj.id, store=mock_store, index_manager=mock_idx_mgr)
+
+    err = str(exc_info.value)
+    assert "Store failure" in err
+    assert "Index failure" in err
+    assert str(Path("uploads/project_1")) in err
+    assert str(Path("indexes/project_1")) in err
 
 
 # ------------------------------------------------------------------- component tests
