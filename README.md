@@ -4,8 +4,8 @@
 
 > Every documentation claim should be supported by evidence.
 
-This repository is built in 8 sequential parts. **Current status: Part 5 - Documentation Verification & Trust Scoring**
-(on top of Parts 1-4). The Generate workflow and the Streamlit UI do not exist yet.
+This repository is built in 8 sequential parts. **Current status: Part 6 - Grounded Documentation Generation**
+(on top of Parts 1-5.1). The Streamlit UI does not exist yet.
 
 ## Setup
 
@@ -62,11 +62,12 @@ trustdoc/
   evaluation/        dataset.py, metrics.py, runner.py + data/ (sample project, queries.json)
   llm/               base.py (LLMBackend, GenerationResult), ollama.py, hf_transformers.py,
                      stub.py (extractive stand-in), factory.py (create_llm, register_backend)
-  workflows/         ask.py (AskService), prompts.py, citations.py, types.py, render.py
+  workflows/         ask.py (AskService), generation.py (GenerationService), prompts.py,
+                     citations.py, types.py, render.py
   verification/      extraction.py (claims from Markdown + docstrings), resolver.py, static_verifier.py (Tier 1),
                      semantic_verifier.py (Tier 2, optional), scoring.py, findings.py (severity), typenorm.py,
                      engine.py (orchestration + persistence), render.py, types.py
-examples/            retrieval_demo.py, ask_demo.py, verify_demo.py
+examples/            retrieval_demo.py, ask_demo.py, verify_demo.py, generate_demo.py
 evaluation_results/  saved evaluation runs (see its README)
 tests/               pytest suite
 data/                runtime data (gitignored): trustdoc.db, uploads/, logs/
@@ -85,7 +86,13 @@ cli / (future Streamlit UI)
         |
  AskService ---> Retriever -> grounded prompt -> LLMBackend (Ollama | Transformers) -> checked citations
         |
- VerificationEngine ---> claims -> Tier 1 static (AST entities) -> [Tier 2 retrieval + optional LLM] -> findings + Trust Score -> DB
+ GenerationService ---> Retriever -> grounded prompt -> LLMBackend -> checked citations
+        |                                                                      |
+        +-----------------------------> VerificationEngine <-------------------+
+                                               |
+                                claims -> Tier 1 static (AST entities) -> [Tier 2 semantic]
+                                               |
+                                     findings + Trust Score -> DB
         |
         |
    Database.session()  -- one transaction per `with` block (commit / rollback)
@@ -759,6 +766,88 @@ pytest tests/test_verify_*.py tests/test_schema_v2_migration.py        # Part 5
 pytest                                                                  # everything
 ```
 
+## Documentation generation (Part 6)
+
+Part 6 introduces the grounded **GENERATE** workflow with automated verification.
+
+### Capabilities
+
+1. **README generation**: Creates a structured project README with overview, key modules/components, and setup/usage details backed by ingested evidence. If setup or installation details are absent from the evidence, the generator explicitly notes their absence rather than inventing third-party packages or shell commands.
+2. **Python API reference**: Creates reference documentation for any indexed function, method, or class resolved from the AST entity repository. The generator is provided the exact AST signature, parameter kinds, default expressions, annotations, and retrieved contextual evidence.
+
+### Grounding & Safety Guarantees
+
+* **Untrusted data fencing**: All project code and documentation chunks in the prompt are enclosed in strict delimiters (`=== BEGIN EVIDENCE E1 ===`) and declared as data, not instructions.
+* **Anti-hallucination rules**: System prompts strictly forbid inventing non-existent parameters, default values, return types, exceptions, or behaviors.
+* **Citation validation**: Output text is analyzed for citation IDs (`[E1]`, `[E2]`). Valid IDs map back to real source chunks and line spans. Fabricated IDs (e.g. `[E99]`) are neutralized to `[unknown source E99]` and logged as warnings.
+* **Generate → Verify integration**: Generated Markdown is ingested as a Markdown source (`origin=GENERATED`) and automatically verified by the existing Part 5 `VerificationEngine`. The result bundles the generated document together with its independent verification report, defect findings, and measurable Trust Score.
+
+### CLI usage
+
+```bash
+# Generate README for project 1
+python -m trustdoc generate --project-id 1 --kind readme
+
+# Generate API documentation for a specific function or class
+python -m trustdoc generate --project-id 1 --kind api --entity taskqueue.workers.compute_backoff
+
+# Safely write to a file (fails if destination exists without --force)
+python -m trustdoc generate --project-id 1 --kind readme --output generated_README.md
+python -m trustdoc generate --project-id 1 --kind readme --output generated_README.md --force
+
+# Also run semantic (LLM-assisted) verification on generated behavioral claims
+python -m trustdoc generate --project-id 1 --kind api --entity compute_backoff --semantic
+
+# Output structured JSON
+python -m trustdoc generate --project-id 1 --kind readme --json
+
+# Set failure threshold (exits with status 3 on defects at or above severity; default: high)
+python -m trustdoc generate --project-id 1 --kind api --entity compute_backoff --fail-on high
+```
+
+Exit codes:
+* `0`: Generation and verification succeeded with no findings at or above `--fail-on` (or insufficient evidence abstention).
+* `1`: Operational failure (retrieval error or LLM failure).
+* `2`: Usage or configuration error (unknown project/entity, missing flags, existing file without `--force`).
+* `3`: Verification detected documentation defects at or above `--fail-on` (e.g. hallucinated parameter or contradicted return type).
+
+### Python API
+
+```python
+from trustdoc.app import bootstrap
+from trustdoc.workflows import create_generation_service
+
+ctx = bootstrap()
+service = create_generation_service(ctx.db, ctx.settings)
+
+# Generate README
+res_readme = service.generate_readme(project_id=1)
+print(res_readme.markdown)
+print(f"Trust Score: {res_readme.trust_score}")
+
+# Generate API documentation
+res_api = service.generate_api(project_id=1, entity_name="compute_backoff")
+print(res_api.markdown)
+```
+
+### Runnable demo
+
+Run the offline Generate → Verify showcase comparing accurate vs hallucinated output:
+
+```bash
+# Full showcase (accurate vs flawed comparison):
+python examples/generate_demo.py
+
+# Good scenario (accurate signature, 100/100 Trust Score):
+python examples/generate_demo.py --good
+
+# Flawed scenario (hallucinated parameter, verifier flags contradictions):
+python examples/generate_demo.py --flawed
+
+# Grounded README generation:
+python examples/generate_demo.py --readme
+```
+
 ## Tests
 
 ```bash
@@ -771,12 +860,13 @@ pytest tests/test_ask_prompts.py tests/test_ask_citations.py tests/test_ask_work
        tests/test_llm_factory_config.py tests/test_ollama_backend.py tests/test_transformers_backend.py \
        tests/test_stub_llm.py tests/test_ask_cli.py tests/test_ask_integration.py    # Part 4
 pytest tests/test_verify_*.py tests/test_schema_v2_migration.py                  # Part 5
+pytest tests/test_generation_*.py                                               # Part 6
 pytest --cov=trustdoc                     # with coverage
 ```
 
 Tests never download models: embeddings and reranking use deterministic stand-ins (`HashingEmbedder`,
 `OverlapReranker`) or scripted rerankers, and the Sentence-Transformers wrapper code is tested against a
-fake `sentence_transformers` module. Part 4 tests use mocked retrievers and LLMs, a local HTTP server mimicking Ollama, and fake `torch`/`transformers` modules, so no LLM is ever downloaded. With a lightweight install the tests that need numpy / FAISS /
+fake `sentence_transformers` module. Part 4 and Part 6 tests use mocked retrievers and LLMs, a local HTTP server mimicking Ollama, and fake `torch`/`transformers` modules, so no LLM is ever downloaded. With a lightweight install the tests that need numpy / FAISS /
 rank_bm25 / PyMuPDF are skipped.
 
 ## Roadmap
@@ -785,5 +875,6 @@ rank_bm25 / PyMuPDF are skipped.
 2. Source & document ingestion - done
 3. Knowledge base & hybrid retrieval - done
 4. RAG Ask + grounded generation - done
-5. Documentation verification + Trust Score - done (this part)
-6-8. GENERATE, UI, final evaluation - one part at a time.
+5. Documentation verification + Trust Score - done
+6. Grounded Documentation Generation (GENERATE -> VERIFY) - done (this part)
+7-8. UI, final evaluation - one part at a time.
