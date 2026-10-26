@@ -181,6 +181,10 @@ class VerificationEngine:
     # ------------------------------------------------------------------------------ run
     def _run(self, project_id: int, *, documents, include_docstrings: bool, include_coverage: bool, semantic: bool,
              origin: ClaimOrigin) -> VerificationReport:
+        if documents is not None:
+            # The same document named more than once would be extracted twice and yield duplicate claims (and thus
+            # duplicate (run_id, claim_id) results). De-duplicate, keeping the order of first appearance.
+            documents = list(dict.fromkeys(documents))
         snapshot = self._config_snapshot(documents, include_docstrings, include_coverage, semantic)
         try:
             computed = self._compute(project_id, documents, include_docstrings, include_coverage, semantic, origin)

@@ -286,3 +286,57 @@ def test_claim_identity_helper_matches_stored_claims(corpus, engine, db):
     engine.verify_project(corpus)
     with db.session() as s:
         assert all(claim_uid(c) for c in s.claims.list_for_project(corpus))
+
+
+# ------------------------------------------------- Part 5.1 hotfix: documents supplied more than once
+def _duplicate_results(db, run_id):
+    with db.session() as s:
+        rows = s.conn.execute(
+            "SELECT claim_id, COUNT(*) FROM claim_results WHERE run_id = ? GROUP BY claim_id HAVING COUNT(*) > 1", (run_id,)).fetchall()
+        total = s.conn.execute("SELECT COUNT(*) FROM claim_results WHERE run_id = ?", (run_id,)).fetchone()[0]
+    return [tuple(r) for r in rows], total
+
+
+@pytest.mark.parametrize("repeats", [2, 3])
+def test_the_same_document_supplied_more_than_once_completes_with_one_result_per_claim(corpus, engine, db, repeats):
+    single = engine.verify_project(corpus, documents=["README.md"])
+    repeated = engine.verify_project(corpus, documents=["README.md"] * repeats)
+
+    assert repeated.run.status == RunStatus.COMPLETED and repeated.documents == ["README.md"]
+    dupes, total = _duplicate_results(db, repeated.run.id)
+    assert dupes == [] and total == repeated.counts["claims"] == len(repeated.claims) == single.counts["claims"] == 8
+    # identical outcome to a single mention: same claims, findings, counts and score
+    assert [c.claim_uid for c in repeated.claims] == [c.claim_uid for c in single.claims]
+    assert {f.uid for f in repeated.findings} == {f.uid for f in single.findings}
+    assert repeated.counts == single.counts and repeated.score.final == single.score.final == 47.5
+    assert repeated.run.config_snapshot["documents"] == ["README.md"]                       # the stored snapshot is de-duplicated too
+    with db.session() as s:
+        assert len(s.claims.list_for_project(corpus)) == 8                                  # no duplicate claim rows either
+
+
+def test_repeated_documents_are_deduplicated_preserving_the_callers_order(corpus, engine, make_service):
+    make_service().ingest_bytes(corpus, "docs/other.md", b"The `retry_failed` function returns a list.\n")
+    r = engine.verify_project(corpus, documents=["docs/other.md", "README.md", "docs/other.md", "README.md"], include_docstrings=False)
+    assert r.documents == ["docs/other.md", "README.md"] and r.run.config_snapshot["documents"] == ["docs/other.md", "README.md"]
+    assert _duplicate_results(engine._db, r.run.id)[0] == []
+    # unchanged behaviour: with no explicit selection the documents come in the existing (name-sorted) order
+    assert engine.verify_project(corpus, include_docstrings=False).documents == ["README.md", "docs/other.md"]
+    assert engine.verify_project(corpus, documents=["README.md", "docs/other.md"], include_docstrings=False).documents == ["README.md", "docs/other.md"]
+
+
+@pytest.mark.parametrize("documents, message", [
+    (["missing.md"], "No source named 'missing.md'"),
+    (["missing.md", "missing.md"], "No source named 'missing.md'"),
+    (["README.md", "missing.md", "README.md"], "No source named 'missing.md'"),
+    (["pkg/mod.py", "pkg/mod.py"], "only Markdown"),
+    (["README.md", "pkg/mod.py", "README.md"], "only Markdown"),
+])
+def test_document_selection_errors_are_preserved_and_record_no_run(corpus, engine, documents, message):
+    with pytest.raises(DocumentSelectionError, match=message):
+        engine.verify_project(corpus, documents=documents)
+    assert engine.list_runs(corpus) == []
+
+
+def test_an_empty_selection_behaves_as_before(corpus, engine):
+    r = engine.verify_project(corpus, documents=[], include_docstrings=False)
+    assert r.documents == [] and r.counts["claims"] == 0 and any("No documentation was selected" in w for w in r.warnings)

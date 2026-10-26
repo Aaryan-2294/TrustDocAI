@@ -147,3 +147,57 @@ def test_existing_commands_still_work(cli_env, capsys):
         main(["ask", "--help"])
     assert e.value.code == 0
     assert main(["init"]) == 0
+
+
+# ------------------------------------------------- Part 5.1 hotfix: repeated document arguments
+def _services():
+    settings = Settings.from_env()
+    return Database(settings.storage.db_path), settings
+
+
+def test_repeated_document_arguments_are_deduplicated(cli_env, capsys):
+    base = ("--project-id", str(cli_env), "--no-docstrings", "--fail-on", "none")
+    code1, once, _ = run(capsys, *base, "--document", "README.md")
+    code2, twice, err = run(capsys, *base, "--document", "README.md", "--document", "README.md")
+    assert code1 == code2 == 0 and err == ""
+    assert "Documents: README.md\n" in twice and "Claims extracted: 7" in twice
+    assert twice.split("Verification run #")[1].split("\n", 1)[1] == once.split("Verification run #")[1].split("\n", 1)[1]   # same report body
+    code3, out, _ = run(capsys, *base, "--document", "README.md", "--document", "README.md", "--json")
+    assert code3 == 0 and json.loads(out)["documents"] == ["README.md"]
+
+
+def test_repeated_document_file_arguments_ingest_and_verify_once(cli_env, tmp_path, capsys):
+    doc = tmp_path / "NOTES.md"
+    doc.write_text("The `retry_failed` function returns a string.\n")
+    code, out, err = run(capsys, "--project-id", str(cli_env), "--no-docstrings", "--document-file", str(doc), "--document-file", str(doc), "--json")
+    data = json.loads(out)
+    assert code == 3 and err == "" and data["documents"] == ["NOTES.md"] and data["status"] == "completed"
+    assert [c["category"] for c in data["claims"]] == ["return"] and data["counts"]["contradicted"] == 1
+    db, _ = _services()
+    with db.session() as s:
+        assert [x.name for x in s.sources.list_for_project(cli_env) if x.name == "NOTES.md"] == ["NOTES.md"]
+        assert len(s.runs.list_for_project(cli_env)) == 1
+
+
+def test_a_source_named_by_both_document_and_document_file_is_verified_once(cli_env, tmp_path, capsys):
+    doc = tmp_path / "NOTES.md"
+    doc.write_text("The `retry_failed` function returns a string.\n")
+    run(capsys, "--project-id", str(cli_env), "--no-docstrings", "--document-file", str(doc), "--fail-on", "none")
+    code, out, _ = run(capsys, "--project-id", str(cli_env), "--no-docstrings", "--document", "NOTES.md", "--document-file", str(doc),
+                       "--document", "NOTES.md", "--json")
+    assert code == 3 and json.loads(out)["documents"] == ["NOTES.md"]
+
+
+def test_document_order_given_on_the_command_line_is_preserved(cli_env, capsys):
+    db, settings = _services()
+    IngestionService(db, settings).ingest_bytes(cli_env, "docs/other.md", b"The `retry_failed` function returns an integer.\n")
+    code, out, _ = run(capsys, "--project-id", str(cli_env), "--no-docstrings", "--fail-on", "none",
+                       "--document", "docs/other.md", "--document", "README.md", "--document", "docs/other.md")
+    assert code == 0 and "Documents: docs/other.md, README.md" in out
+
+
+def test_document_errors_keep_their_exit_codes_even_with_repeats(cli_env, capsys):
+    for argv, message in ((["--document", "missing.md", "--document", "missing.md"], "No source named 'missing.md'"),
+                          (["--document", "README.md", "--document", "pkg/mod.py", "--document", "pkg/mod.py"], "only Markdown")):
+        code, out, err = run(capsys, "--project-id", str(cli_env), *argv)
+        assert code == 2 and message in err and out == ""

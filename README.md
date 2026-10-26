@@ -639,6 +639,8 @@ Python: `VerificationEngine(db, settings).verify_project(project_id)`; `.verify_
 (for example an Ask answer or other generated documentation, stored as a Markdown source with `origin=generated`);
 `.list_runs(project_id)`; `.load_report(run_id)`.
 
+Repeated `--document` / `--document-file` values (or repeated names passed to `verify_project`) are de-duplicated, keeping the order of first appearance; naming a source twice never changes the result.
+
 **Exit codes** (a finding is not a crash): `0` completed, nothing at or above `--fail-on`; `3` completed with documentation
 findings at or above `--fail-on` (default `high`; `--fail-on none` never fails; INFO never fails); `2` usage/configuration
 problem (unknown project, run or document, non-Markdown `--document`); `1` the run itself failed. Errors go to stderr.
