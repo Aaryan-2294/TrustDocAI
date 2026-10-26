@@ -9,3 +9,9 @@ venv/
 .env
 data/*
 !data/.gitkeep
+
+# Handoff and prompt notes
+ANTIGRAVITY_HANDOFF.md
+PART6_PROMPT.md
+*_HANDOFF.md
+PART*_PROMPT.md
