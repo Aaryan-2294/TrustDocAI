@@ -138,6 +138,7 @@ class GenerationStatus(str, Enum):
     RETRIEVAL_ERROR = "retrieval_error"
     GENERATION_ERROR = "generation_error"
     VERIFICATION_ERROR = "verification_error"
+    VERIFICATION_SKIPPED = "verification_skipped"
 
 
 @dataclass
@@ -182,11 +183,16 @@ class GenerationResult:
             return self.verification_report.claims
         return []
 
+    @property
+    def is_verified(self) -> bool:
+        return self.status == GenerationStatus.COMPLETED and self.verification_report is not None
+
     def to_dict(self, include_evidence_text: bool = False) -> dict[str, Any]:
         return {
             "project_id": self.project_id,
             "kind": self.kind.value,
             "status": self.status.value,
+            "is_verified": self.is_verified,
             "markdown": self.markdown,
             "target_entity": self.target_entity,
             "trust_score": self.trust_score,

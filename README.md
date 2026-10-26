@@ -829,6 +829,11 @@ print(f"Trust Score: {res_readme.trust_score}")
 # Generate API documentation
 res_api = service.generate_api(project_id=1, entity_name="compute_backoff")
 print(res_api.markdown)
+
+# Verification can be skipped explicitly (status becomes 'verification_skipped', is_verified=False):
+res_unverified = service.generate_readme(project_id=1, run_verify=False)
+assert res_unverified.status == "verification_skipped"
+assert res_unverified.is_verified is False
 ```
 
 ### Runnable demo

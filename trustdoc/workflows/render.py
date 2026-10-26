@@ -119,6 +119,10 @@ def render_generation_result(
             f"Result: VERIFICATION ERROR ({result.error_kind or 'verification_failed'}): "
             f"{result.error}{model} | citation check: {grounding}"
         )
+    elif result.status == GenerationStatus.VERIFICATION_SKIPPED:
+        lines.append(
+            f"Result: VERIFICATION SKIPPED (unverified){model} | citation check: {grounding}"
+        )
     else:
         lines.append(f"Result: {result.status.value}{model} | citation check: {grounding}")
 
@@ -129,6 +133,13 @@ def render_generation_result(
                 "--- Generated Markdown (UNVERIFIED) ---",
                 result.markdown.strip(),
                 "--- End of Generated Markdown (UNVERIFIED) ---",
+            ]
+        elif result.status == GenerationStatus.VERIFICATION_SKIPPED:
+            lines += [
+                "",
+                "--- Generated Markdown (UNVERIFIED - verification skipped) ---",
+                result.markdown.strip(),
+                "--- End of Generated Markdown (UNVERIFIED - verification skipped) ---",
             ]
         else:
             lines += ["", "--- Generated Markdown ---", result.markdown.strip(), "--- End of Generated Markdown ---"]
@@ -156,6 +167,13 @@ def render_generation_result(
     if result.warnings:
         lines += ["", "Warnings:"] + [f"  - {w}" for w in result.warnings]
 
-    lines += ["", GENERATION_DISCLAIMER]
+    if result.status in (GenerationStatus.VERIFICATION_SKIPPED, GenerationStatus.VERIFICATION_ERROR):
+        lines += [
+            "",
+            "Citations show which retrieved evidence the model referenced. "
+            "Verification was not performed or failed; this output has NOT been verified against the code index.",
+        ]
+    else:
+        lines += ["", GENERATION_DISCLAIMER]
     return "\n".join(lines)
 

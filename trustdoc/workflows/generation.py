@@ -5,6 +5,8 @@ validates citations, and passes the generated Markdown through the Part 5 Verifi
 
 Outcomes (``GenerationResult.status``):
 * ``completed``             the model generated documentation and it was verified
+* ``verification_skipped``  the model generated documentation with verification skipped (run_verify=False)
+* ``verification_error``    the model generated documentation but verification failed or crashed
 * ``insufficient_evidence`` retrieval abstained or found no usable evidence for the project/entity
 * ``retrieval_error`` / ``generation_error``  operational failures; no documentation is fabricated
 
@@ -290,7 +292,12 @@ class GenerationService:
 
         timings["total_ms"] = _ms(started)
 
-        status = GenerationStatus.VERIFICATION_ERROR if verification_error else GenerationStatus.COMPLETED
+        if not run_verify:
+            status = GenerationStatus.VERIFICATION_SKIPPED
+        elif verification_error:
+            status = GenerationStatus.VERIFICATION_ERROR
+        else:
+            status = GenerationStatus.COMPLETED
 
         return GenerationResult(
             project_id=project_id,
@@ -521,7 +528,12 @@ class GenerationService:
 
         timings["total_ms"] = _ms(started)
 
-        status = GenerationStatus.VERIFICATION_ERROR if verification_error else GenerationStatus.COMPLETED
+        if not run_verify:
+            status = GenerationStatus.VERIFICATION_SKIPPED
+        elif verification_error:
+            status = GenerationStatus.VERIFICATION_ERROR
+        else:
+            status = GenerationStatus.COMPLETED
 
         return GenerationResult(
             project_id=project_id,

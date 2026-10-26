@@ -87,6 +87,11 @@ def test_api_generation_resolves_qualified_and_simple_names(db, settings, sample
 
     assert res1.target_entity == "taskqueue.workers.compute_backoff"
     assert res2.target_entity == "taskqueue.workers.compute_backoff"
+    assert res1.status == GenerationStatus.VERIFICATION_SKIPPED
+    assert res1.is_verified is False
+    assert res1.verification_report is None
+    assert res2.status == GenerationStatus.VERIFICATION_SKIPPED
+    assert res2.is_verified is False
 
 
 def test_api_generation_nonexistent_entity_raises_not_found(db, settings, sample):
@@ -422,3 +427,46 @@ def test_verification_failure_in_api_generation_returns_verification_error(db, s
     rendered = render_generation_result(result)
     assert "Result: VERIFICATION ERROR (verification_failed)" in rendered
     assert "--- Generated Markdown (UNVERIFIED) ---" in rendered
+
+
+def test_readme_generation_with_verification_skipped(db, settings, sample):
+    """When run_verify=False, README generation returns VERIFICATION_SKIPPED and is marked unverified."""
+    service = GenerationService(db, settings, retriever_for(db, settings), ExtractiveStubLLM())
+
+    result = service.generate_readme(sample, run_verify=False)
+    assert result.status == GenerationStatus.VERIFICATION_SKIPPED
+    assert result.is_verified is False
+    assert result.verification_report is None
+    assert result.trust_score is None
+    assert len(result.markdown) > 0
+
+    rendered = render_generation_result(result)
+    assert "Result: VERIFICATION SKIPPED (unverified)" in rendered
+    assert "--- Generated Markdown (UNVERIFIED - verification skipped) ---" in rendered
+    assert "Verification was not performed or failed; this output has NOT been verified" in rendered
+
+    data = result.to_dict()
+    assert data["status"] == "verification_skipped"
+    assert data["is_verified"] is False
+    assert data["verification_report"] is None
+
+
+def test_api_generation_with_verification_skipped(db, settings, sample):
+    """When run_verify=False, API generation returns VERIFICATION_SKIPPED and is marked unverified."""
+    service = GenerationService(db, settings, retriever_for(db, settings), ExtractiveStubLLM())
+
+    result = service.generate_api(sample, "compute_backoff", run_verify=False)
+    assert result.status == GenerationStatus.VERIFICATION_SKIPPED
+    assert result.is_verified is False
+    assert result.verification_report is None
+    assert result.trust_score is None
+    assert len(result.markdown) > 0
+
+    rendered = render_generation_result(result)
+    assert "Result: VERIFICATION SKIPPED (unverified)" in rendered
+    assert "--- Generated Markdown (UNVERIFIED - verification skipped) ---" in rendered
+    assert "Verification was not performed or failed; this output has NOT been verified" in rendered
+
+    data = result.to_dict()
+    assert data["status"] == "verification_skipped"
+    assert data["is_verified"] is False
