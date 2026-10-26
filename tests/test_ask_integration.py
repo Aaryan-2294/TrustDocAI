@@ -6,6 +6,8 @@ says nothing about real-model answer quality.
 """
 
 import socket
+import urllib.error
+import urllib.request
 
 import pytest
 from ask_support import FakeOllama
@@ -138,7 +140,7 @@ def test_hostile_document_cannot_close_its_fence_or_forge_citations(db, settings
     assert r.grounding == GroundingLevel.UNCITED and r.invalid_citation_ids == ["E9"]
 
 
-def test_model_declaring_insufficiency_and_unavailable_server(db, settings, sample, fake_ollama):
+def test_model_declaring_insufficiency_and_unavailable_server(db, settings, sample, fake_ollama, monkeypatch):
     cfg = settings_with(settings, LLM_PROVIDER="ollama", LLM_MODEL="m", LLM_BASE_URL=fake_ollama.url)
     ask = create_ask_service(db, cfg, retriever=retriever_for(db, settings))
     fake_ollama.respond({"message": {"content": "INSUFFICIENT_EVIDENCE\nNothing here covers deployment."}})
@@ -146,11 +148,13 @@ def test_model_declaring_insufficiency_and_unavailable_server(db, settings, samp
     assert r.status == AskStatus.INSUFFICIENT_EVIDENCE and r.abstention_reason == "model_declared_insufficient"
     assert r.evidence                                                       # retrieved evidence preserved for Part 5
 
-    with socket.socket() as s:
-        s.bind(("127.0.0.1", 0))
-        dead = s.getsockname()[1]
-    down = settings_with(settings, LLM_PROVIDER="ollama", LLM_MODEL="m", LLM_BASE_URL=f"http://127.0.0.1:{dead}",
+    down = settings_with(settings, LLM_PROVIDER="ollama", LLM_MODEL="m", LLM_BASE_URL="http://127.0.0.1:11434",
                          LLM_TIMEOUT_SECONDS=2)
+
+    def fail_open(*args, **kwargs):
+        raise urllib.error.URLError(ConnectionRefusedError("Connection refused"))
+
+    monkeypatch.setattr(urllib.request.OpenerDirector, "open", fail_open)
     r = create_ask_service(db, down, retriever=retriever_for(db, settings)).ask(sample, "compute_backoff")
     assert r.status == AskStatus.GENERATION_ERROR and r.error_kind == "unavailable" and "ollama serve" in r.error
     assert r.answer == "" and r.evidence and r.citations == []

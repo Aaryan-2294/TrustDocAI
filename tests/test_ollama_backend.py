@@ -5,6 +5,7 @@ Ollama installation or a real model.
 """
 
 import socket
+import urllib.error
 
 import pytest
 
@@ -92,12 +93,15 @@ def test_slow_server_raises_a_timeout_with_advice(fake):
         backend(fake, timeout_seconds=0.3).generate("p")
 
 
-def test_unreachable_server_explains_how_to_start_ollama():
-    with socket.socket() as s:
-        s.bind(("127.0.0.1", 0))
-        port = s.getsockname()[1]                         # a port nobody is listening on
+def test_unreachable_server_explains_how_to_start_ollama(monkeypatch):
+    b = OllamaBackend("m", "http://127.0.0.1:11434", timeout_seconds=2)
+
+    def fail_open(*args, **kwargs):
+        raise urllib.error.URLError(ConnectionRefusedError("Connection refused"))
+
+    monkeypatch.setattr(b._opener, "open", fail_open)
     with pytest.raises(LLMUnavailableError, match="ollama serve"):
-        OllamaBackend("m", f"http://127.0.0.1:{port}", timeout_seconds=2).generate("p")
+        b.generate("p")
 
 
 def test_environment_proxies_are_ignored_for_the_local_server(fake, monkeypatch):

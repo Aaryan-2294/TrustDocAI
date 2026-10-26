@@ -258,7 +258,7 @@ def test_ingest_sample_project_end_to_end(service, db, project_id, sample_projec
         assert entities["pkg.core"].parent_id is None
 
         # provenance: every code chunk points back to a real entity and to the exact stored source lines
-        stored_lines = service.store.read(core.stored_path).decode().split("\n")
+        stored_lines = service.store.read(core.stored_path).decode().splitlines()
         chunks = s.chunks.list_for_source(core.id)
         assert [c.chunk_index for c in chunks] == list(range(len(chunks)))
         for c in chunks:
