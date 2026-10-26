@@ -67,6 +67,10 @@ class Retriever:
     def index_manager(self) -> IndexManager:
         return self._indexes
 
+    def invalidate(self, project_id: int) -> bool:
+        """Invalidate the in-memory cache and persisted index for project_id."""
+        return self._indexes.invalidate(project_id)
+
     # ---------------------------------------------------------------- search
     def search(
         self,

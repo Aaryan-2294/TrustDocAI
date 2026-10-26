@@ -12,12 +12,13 @@
 from __future__ import annotations
 
 import os
+import shutil
 import re
 import tempfile
 import unicodedata
 from pathlib import Path, PurePosixPath
 
-from trustdoc.exceptions import InvalidSourceNameError, UnsupportedSourceError
+from trustdoc.exceptions import CleanupError, InvalidSourceNameError, UnsupportedSourceError
 from trustdoc.models import SourceType
 
 MAX_NAME_LENGTH = 512
@@ -114,9 +115,30 @@ class UploadStore:
     def read(self, stored_path: str) -> bytes:
         return self.resolve(stored_path).read_bytes()
 
+    def project_dir(self, project_id: int) -> Path:
+        """Resolve the safe on-disk directory for a project's uploads."""
+        target = (self.root / f"project_{int(project_id)}").resolve()
+        if not target.is_relative_to(self.root):
+            raise InvalidSourceNameError(f"Invalid project id escapes uploads directory: {project_id}")
+        return target
+
+    def delete_project(self, project_id: int) -> bool:
+        """Remove the project upload directory and all contained files."""
+        proj_dir = self.project_dir(project_id)
+        if proj_dir.is_dir():
+            try:
+                shutil.rmtree(proj_dir)
+                return True
+            except OSError as exc:
+                raise CleanupError(f"Failed to delete upload files for project {project_id}: {exc}") from exc
+        return False
+
     def delete(self, stored_path: str) -> bool:
         path = self.resolve(stored_path)
         if path.is_file():
-            path.unlink()
-            return True
+            try:
+                path.unlink()
+                return True
+            except OSError as exc:
+                raise CleanupError(f"Failed to delete stored file {stored_path}: {exc}") from exc
         return False

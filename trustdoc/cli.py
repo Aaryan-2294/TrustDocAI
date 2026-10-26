@@ -239,6 +239,29 @@ def _generate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _ui(args: argparse.Namespace) -> int:
+    """Launch the Streamlit web interface (Part 7)."""
+    import subprocess
+    from pathlib import Path
+
+    try:
+        import streamlit  # noqa: F401
+    except ImportError:
+        print("error: Streamlit is not installed. Install with: pip install -e .[ui]", file=sys.stderr)
+        return 2
+
+    app_path = Path(__file__).resolve().parent / "ui" / "app.py"
+    cmd = [sys.executable, "-m", "streamlit", "run", str(app_path)]
+    if args.port:
+        cmd.extend(["--server.port", str(args.port)])
+    if args.host:
+        cmd.extend(["--server.address", str(args.host)])
+    try:
+        return subprocess.call(cmd)
+    except KeyboardInterrupt:
+        return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="trustdoc", description="TrustDoc AI command-line tools")
     parser.add_argument("--version", action="version", version=f"trustdoc {__version__}")
@@ -321,6 +344,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     gen.add_argument("--show-evidence", action="store_true", help="also print short snippets of the evidence used")
     gen.add_argument("--json", action="store_true", help="print the full structured result as JSON")
 
+    ui_p = sub.add_parser("ui", help="launch the Streamlit web interface")
+    ui_p.add_argument("--port", type=int, default=None, help="port to bind the Streamlit server")
+    ui_p.add_argument("--host", default=None, help="address to bind the Streamlit server")
+
     args = parser.parse_args(argv)
     if args.command == "verify" and not args.show_run and args.project_id is None and not args.project:
         parser.error("verify needs --project-id or --project (or --show-run RUN_ID)")
@@ -336,6 +363,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _verify(args)
         if args.command == "generate":
             return _generate(args)
+        if args.command == "ui":
+            return _ui(args)
+
         ctx = bootstrap(Settings.from_env())
     except TrustDocError as exc:
         print(f"error: {exc}", file=sys.stderr if args.command in ("ask", "verify", "generate") else sys.stdout)

@@ -4,8 +4,8 @@
 
 > Every documentation claim should be supported by evidence.
 
-This repository is built in 8 sequential parts. **Current status: Part 6 - Grounded Documentation Generation**
-(on top of Parts 1-5.1). The Streamlit UI does not exist yet.
+This repository is built in 8 sequential parts. **Current status: Part 7 - Streamlit Web UI**
+(on top of Parts 1-6.2).
 
 ## Setup
 
@@ -15,9 +15,10 @@ Requires Python 3.10+. The core is standard-library only; PDF ingestion needs Py
 ```bash
 python -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install -e ".[dev,pdf,retrieval]"  # or: pip install -r requirements.txt
-                                     # omit ",pdf" / ",retrieval" for a lightweight install; the
-                                     # tests that need them are then skipped, not failed
+pip install -e ".[dev,pdf,retrieval,ui]"  # or: pip install -r requirements.txt
+                                         # or: pip install -e ".[all]"
+                                         # omit extras for a lightweight install; tests requiring
+                                         # missing extras are skipped cleanly, not failed
 
 cp .env.example .env                 # optional; defaults work as-is
 python -m trustdoc init              # creates data/ and the SQLite database
@@ -26,7 +27,7 @@ pytest                               # run the whole test suite
 ```
 
 Optional extras: `.[pdf]` (PyMuPDF), `.[retrieval]` (sentence-transformers, faiss-cpu, rank_bm25, numpy),
-`.[ui]` (Streamlit - later part), `.[all]`. The default install stays lightweight: importing
+`.[ui]` (Streamlit), `.[all]`. The default install stays lightweight: importing
 `trustdoc.retrieval` without the extra still gives you the pure modules (types, tokenizer, RRF,
 threshold); anything that needs numpy/FAISS/torch raises a clear `MissingDependencyError`. Without `pdf`, Python and
 Markdown ingestion work normally and ingesting a PDF raises a clear `MissingDependencyError`.
@@ -854,11 +855,41 @@ python examples/generate_demo.py --flawed
 python examples/generate_demo.py --readme
 ```
 
+## Web Interface (Part 7)
+
+TrustDoc AI includes a clean, polished Streamlit UI exposing all core workflows:
+* **📁 Project & Source Management**: Create projects, upload `.py`, `.md`, and `.pdf` files, inspect indexed code entities and chunks, and manage project data safely.
+* **💬 Ask**: Interactive question answering strictly grounded in retrieved project evidence with validated citation anchors, evidence inspection drawers, and honest abstention when evidence is insufficient.
+* **📝 Generate**: Grounded README and Python API documentation generation with AST entity selection, Markdown preview, one-click file download (`st.download_button`), and automated AST verification integration.
+* **🔍 Verify**: Verify existing indexed documentation or custom Markdown against code AST, displaying the transparent Trust Score breakdown, 4-quadrant claim outcomes, severity-grouped remediation suggestions, and prominent heuristic disclaimers.
+
+### Installation & Launch
+
+Install with the `ui` extra:
+```bash
+pip install -e ".[ui]"
+# or install everything:
+pip install -e ".[all]"
+```
+
+Launch the interface via the CLI:
+```bash
+python -m trustdoc ui
+# or with custom port/host:
+python -m trustdoc ui --port 8501 --host 127.0.0.1
+```
+
+Or run Streamlit directly:
+```bash
+streamlit run trustdoc/ui/app.py
+```
+
 ## Tests
 
 ```bash
-pip install -e ".[dev,pdf,retrieval]"
-pytest                                    # everything
+# Complete suite (including all extras: PDF, retrieval, UI):
+pip install -e ".[dev,pdf,retrieval,ui]"  # or: pip install -e ".[all]"
+pytest                                    # runs full test suite
 pytest tests/test_retrieval_fusion.py tests/test_retrieval_threshold.py tests/test_faiss_index.py \
        tests/test_bm25_index.py tests/test_index_manager.py tests/test_retriever.py \
        tests/test_retrieval_integration.py tests/test_evaluation.py     # Part 3 core
@@ -867,13 +898,14 @@ pytest tests/test_ask_prompts.py tests/test_ask_citations.py tests/test_ask_work
        tests/test_stub_llm.py tests/test_ask_cli.py tests/test_ask_integration.py    # Part 4
 pytest tests/test_verify_*.py tests/test_schema_v2_migration.py                  # Part 5
 pytest tests/test_generation_*.py                                               # Part 6
+pytest tests/test_ui.py                                                         # Part 7 (Streamlit UI)
 pytest --cov=trustdoc                     # with coverage
 ```
 
 Tests never download models: embeddings and reranking use deterministic stand-ins (`HashingEmbedder`,
 `OverlapReranker`) or scripted rerankers, and the Sentence-Transformers wrapper code is tested against a
 fake `sentence_transformers` module. Part 4 and Part 6 tests use mocked retrievers and LLMs, a local HTTP server mimicking Ollama, and fake `torch`/`transformers` modules, so no LLM is ever downloaded. With a lightweight install the tests that need numpy / FAISS /
-rank_bm25 / PyMuPDF are skipped.
+rank_bm25 / PyMuPDF / Streamlit are skipped cleanly with clear explanations.
 
 ## Roadmap
 
@@ -882,5 +914,6 @@ rank_bm25 / PyMuPDF are skipped.
 3. Knowledge base & hybrid retrieval - done
 4. RAG Ask + grounded generation - done
 5. Documentation verification + Trust Score - done
-6. Grounded Documentation Generation (GENERATE -> VERIFY) - done (this part)
-7-8. UI, final evaluation - one part at a time.
+6. Grounded Documentation Generation (GENERATE -> VERIFY) - done
+7. Streamlit Web UI - done (this part)
+8. Final evaluation & packaging - next
