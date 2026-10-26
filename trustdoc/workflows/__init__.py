@@ -9,6 +9,7 @@ from trustdoc.workflows.prompts import (
     build_prompt,
     build_readme_prompt,
     format_entity_signature,
+    format_parameters,
 )
 from trustdoc.workflows.render import render_ask_result, render_generation_result
 from trustdoc.workflows.types import (
@@ -26,7 +27,7 @@ from trustdoc.workflows.types import (
 __all__ = [
     "AskService", "create_ask_service", "AskResult", "AskStatus", "AskCitation", "AskEvidence",
     "GroundingLevel", "RetrievalSummary", "analyze_citations", "CitationAnalysis",
-    "build_prompt", "build_readme_prompt", "build_api_prompt", "format_entity_signature",
+    "build_prompt", "build_readme_prompt", "build_api_prompt", "format_parameters", "format_entity_signature",
     "PromptBundle", "render_ask_result", "render_generation_result",
     "GenerationService", "create_generation_service", "GenerationKind", "GenerationStatus", "GenerationResult",
 ]

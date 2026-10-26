@@ -137,6 +137,7 @@ class GenerationStatus(str, Enum):
     INSUFFICIENT_EVIDENCE = "insufficient_evidence"
     RETRIEVAL_ERROR = "retrieval_error"
     GENERATION_ERROR = "generation_error"
+    VERIFICATION_ERROR = "verification_error"
 
 
 @dataclass

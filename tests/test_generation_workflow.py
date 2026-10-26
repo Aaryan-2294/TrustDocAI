@@ -222,3 +222,203 @@ def test_general_dispatch_method(db, settings, sample):
 
     with pytest.raises(InvalidQuestionError):
         service.generate(sample, "api")  # missing entity
+
+
+# ---------------------------------------------------------------- Part 6.1 Hotfix Tests
+
+def test_format_entity_signature_all_parameter_kinds():
+    from trustdoc.models import CodeEntity, EntityType, Parameter, ParameterKind
+    from trustdoc.workflows.prompts import format_entity_signature, format_parameters
+
+    # 1. Positional-only params alone -> adds trailing '/'
+    pos_only = [
+        Parameter("a", kind=ParameterKind.POSITIONAL_ONLY),
+        Parameter("b", kind=ParameterKind.POSITIONAL_ONLY, default="1"),
+    ]
+    assert format_parameters(pos_only) == "a, b = 1, /"
+
+    # 2. Positional-only followed by positional-or-keyword
+    mixed_pos = [
+        Parameter("a", kind=ParameterKind.POSITIONAL_ONLY),
+        Parameter("b", kind=ParameterKind.POSITIONAL_OR_KEYWORD),
+    ]
+    assert format_parameters(mixed_pos) == "a, /, b"
+
+    # 3. Keyword-only without *args -> requires bare '*'
+    kw_only = [
+        Parameter("a", kind=ParameterKind.POSITIONAL_OR_KEYWORD),
+        Parameter("k", kind=ParameterKind.KEYWORD_ONLY, default="None"),
+    ]
+    assert format_parameters(kw_only) == "a, *, k = None"
+
+    # 4. Keyword-only alone -> starts with '*'
+    kw_only_alone = [
+        Parameter("k", kind=ParameterKind.KEYWORD_ONLY, annotation="int", default="0"),
+    ]
+    assert format_parameters(kw_only_alone) == "*, k: int = 0"
+
+    # 5. Var-positional (*args) and keyword-only -> NO bare '*'
+    var_pos = [
+        Parameter("args", kind=ParameterKind.VAR_POSITIONAL),
+        Parameter("k", kind=ParameterKind.KEYWORD_ONLY, annotation="str"),
+    ]
+    assert format_parameters(var_pos) == "*args, k: str"
+
+    # 6. Var-keyword (**kwargs)
+    var_kw = [
+        Parameter("kwargs", kind=ParameterKind.VAR_KEYWORD, annotation="dict[str, Any]"),
+    ]
+    assert format_parameters(var_kw) == "**kwargs: dict[str, Any]"
+
+    # 7. Complete signature with all 5 parameter kinds, annotations, default of None, and async
+    full_func = CodeEntity(
+        project_id=1, source_id=1, entity_type=EntityType.FUNCTION,
+        name="do_work", qualified_name="pkg.do_work",
+        parameters=[
+            Parameter("p1", kind=ParameterKind.POSITIONAL_ONLY, annotation="int"),
+            Parameter("p2", kind=ParameterKind.POSITIONAL_ONLY, default="None"),
+            Parameter("pk", kind=ParameterKind.POSITIONAL_OR_KEYWORD, annotation="str", default="'default'"),
+            Parameter("args", kind=ParameterKind.VAR_POSITIONAL, annotation="int"),
+            Parameter("kw", kind=ParameterKind.KEYWORD_ONLY, annotation="bool", default="False"),
+            Parameter("extra", kind=ParameterKind.VAR_KEYWORD, annotation="Any"),
+        ],
+        return_annotation="tuple[int, ...]",
+        is_async=True,
+        start_line=1, end_line=10,
+    )
+    sig = format_entity_signature(full_func)
+    expected = (
+        "async def do_work(p1: int, p2 = None, /, pk: str = 'default', *args: int, "
+        "kw: bool = False, **extra: Any) -> tuple[int, ...]"
+    )
+    assert sig == expected
+
+    # 8. Methods with self or cls in actual declaration are preserved
+    method = CodeEntity(
+        project_id=1, source_id=1, entity_type=EntityType.METHOD,
+        name="run", qualified_name="pkg.Worker.run",
+        parameters=[
+            Parameter("self"),
+            Parameter("timeout", annotation="float", default="10.0"),
+        ],
+        return_annotation="bool",
+        is_async=False,
+        start_line=2, end_line=5,
+    )
+    assert format_entity_signature(method) == "def run(self, timeout: float = 10.0) -> bool"
+
+    classmethod_entity = CodeEntity(
+        project_id=1, source_id=1, entity_type=EntityType.METHOD,
+        name="create", qualified_name="pkg.Worker.create",
+        parameters=[
+            Parameter("cls"),
+            Parameter("name", annotation="str"),
+        ],
+        return_annotation="Worker",
+        is_async=False,
+        start_line=6, end_line=8,
+    )
+    assert format_entity_signature(classmethod_entity) == "def create(cls, name: str) -> Worker"
+
+
+def test_format_entity_signature_class_with_and_without_constructor():
+    from trustdoc.models import CodeEntity, EntityType, Parameter, ParameterKind
+    from trustdoc.workflows.prompts import format_entity_signature
+
+    cls_entity = CodeEntity(
+        project_id=1, source_id=1, entity_type=EntityType.CLASS,
+        name="TaskQueue", qualified_name="pkg.TaskQueue",
+        start_line=1, end_line=20,
+    )
+
+    # Without constructor -> clean class declaration
+    assert format_entity_signature(cls_entity) == "class TaskQueue:"
+    assert format_entity_signature(cls_entity, constructor=None) == "class TaskQueue:"
+
+    # With constructor having only self -> class TaskQueue:
+    empty_init = CodeEntity(
+        project_id=1, source_id=1, entity_type=EntityType.METHOD,
+        name="__init__", qualified_name="pkg.TaskQueue.__init__",
+        parameters=[Parameter("self")],
+        start_line=2, end_line=3,
+    )
+    assert format_entity_signature(cls_entity, constructor=empty_init) == "class TaskQueue:"
+
+    # With constructor having parameters -> self is stripped, constructor parameters formatted
+    rich_init = CodeEntity(
+        project_id=1, source_id=1, entity_type=EntityType.METHOD,
+        name="__init__", qualified_name="pkg.TaskQueue.__init__",
+        parameters=[
+            Parameter("self"),
+            Parameter("backend", default="None"),
+            Parameter("max_size", kind=ParameterKind.KEYWORD_ONLY, annotation="int", default="10000"),
+        ],
+        start_line=2, end_line=5,
+    )
+    assert format_entity_signature(cls_entity, constructor=rich_init) == "class TaskQueue(backend = None, *, max_size: int = 10000):"
+
+
+def test_api_generation_for_class_with_indexed_constructor(db, settings, sample):
+    """Documenting a class target uses its indexed constructor signature and parameters."""
+    service = GenerationService(db, settings, retriever_for(db, settings), ExtractiveStubLLM())
+    res = service.generate_api(sample, "WorkerPool")
+
+    assert res.status == GenerationStatus.COMPLETED
+    assert res.target_entity == "taskqueue.workers.WorkerPool"
+    # WorkerPool has __init__(self, queue, handler, visibility_timeout: float = 30.0)
+    # The prompt should include the constructor signature
+    assert "WorkerPool" in res.markdown
+
+
+def test_api_generation_for_class_without_indexed_constructor(db, settings, sample):
+    """Documenting a class target without an indexed __init__ does not invent constructor details."""
+    service = GenerationService(db, settings, retriever_for(db, settings), ExtractiveStubLLM())
+    res = service.generate_api(sample, "Task")
+
+    assert res.status == GenerationStatus.COMPLETED
+    assert res.target_entity == "taskqueue.queue.Task"
+
+
+def test_verification_failure_in_readme_generation_returns_verification_error(db, settings, sample, monkeypatch):
+    """Verification exception during README generation must produce VERIFICATION_ERROR and preserve markdown."""
+    service = GenerationService(db, settings, retriever_for(db, settings), ExtractiveStubLLM())
+
+    def raise_verify(*args, **kwargs):
+        raise RuntimeError("Verification engine crashed on disk failure")
+
+    monkeypatch.setattr(service._verifier, "verify_text", raise_verify)
+
+    result = service.generate_readme(sample)
+    assert result.status == GenerationStatus.VERIFICATION_ERROR
+    assert result.error == "Verification engine crashed on disk failure"
+    assert result.error_kind == "verification_failed"
+    assert len(result.markdown) > 0  # Markdown is preserved for diagnostics!
+    assert result.verification_report is None
+    assert any("Verification could not be completed" in w for w in result.warnings)
+
+    rendered = render_generation_result(result)
+    assert "Result: VERIFICATION ERROR (verification_failed): Verification engine crashed" in rendered
+    assert "--- Generated Markdown (UNVERIFIED) ---" in rendered
+    assert "--- End of Generated Markdown (UNVERIFIED) ---" in rendered
+
+
+def test_verification_failure_in_api_generation_returns_verification_error(db, settings, sample, monkeypatch):
+    """Verification exception during API generation must produce VERIFICATION_ERROR and preserve markdown."""
+    service = GenerationService(db, settings, retriever_for(db, settings), ExtractiveStubLLM())
+
+    def raise_verify(*args, **kwargs):
+        raise RuntimeError("AST verification failed unexpectedly")
+
+    monkeypatch.setattr(service._verifier, "verify_text", raise_verify)
+
+    result = service.generate_api(sample, "compute_backoff")
+    assert result.status == GenerationStatus.VERIFICATION_ERROR
+    assert result.error == "AST verification failed unexpectedly"
+    assert result.error_kind == "verification_failed"
+    assert len(result.markdown) > 0  # Markdown is preserved for diagnostics!
+    assert result.verification_report is None
+    assert any("Verification could not be completed" in w for w in result.warnings)
+
+    rendered = render_generation_result(result)
+    assert "Result: VERIFICATION ERROR (verification_failed)" in rendered
+    assert "--- Generated Markdown (UNVERIFIED) ---" in rendered

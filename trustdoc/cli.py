@@ -192,6 +192,28 @@ def _generate(args: argparse.Namespace) -> int:
             print(text, file=sys.stderr)
         return 2 if result.error_kind in ("not_configured", "dependency_missing") else 1
 
+    if result.status == GenerationStatus.VERIFICATION_ERROR:
+        should_write = bool(out_path and args.allow_unverified and result.markdown)
+        if should_write:
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(result.markdown, encoding="utf-8")
+
+        if args.json:
+            print(json.dumps(result.to_dict(include_evidence_text=False), indent=2))
+        else:
+            text = render_generation_result(
+                result,
+                show_evidence=args.show_evidence,
+                show_markdown=not should_write,
+                max_findings=args.max_findings,
+            )
+            print(text, file=sys.stderr)
+            if should_write:
+                print(f"\nWrote unverified documentation to {out_path} (--allow-unverified specified)", file=sys.stderr)
+            elif out_path:
+                print(f"\nRefused to write unverified documentation to {out_path}. Pass --allow-unverified to save anyway.", file=sys.stderr)
+        return 1
+
     if out_path and result.status == GenerationStatus.COMPLETED and result.markdown:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(result.markdown, encoding="utf-8")
@@ -288,6 +310,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     gen.add_argument("--entity", default=None, help="qualified or simple name of the Python entity to document (required for --kind api)")
     gen.add_argument("--output", "-o", default=None, help="write generated Markdown to this file path (safe, will not overwrite by default)")
     gen.add_argument("--force", action="store_true", help="overwrite destination file if it already exists")
+    gen.add_argument("--allow-unverified", action="store_true", help="write output file even if automated verification fails")
     gen.add_argument("--top-k", type=int, default=None, help="evidence items to retrieve (default: config)")
     gen.add_argument("--semantic", action="store_true", help="also run LLM-assisted semantic checks on verified generated claims")
     gen.add_argument("--provider", default=None, help="override TRUSTDOC_LLM_PROVIDER (ollama|transformers|stub)")

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import time
-from typing import Callable, Sequence, Union
+from typing import TYPE_CHECKING, Callable, Sequence, Union
 
 from trustdoc.config import Settings
 from trustdoc.db import Database
@@ -32,10 +32,12 @@ from trustdoc.exceptions import (
 from trustdoc.llm.base import LLMBackend
 from trustdoc.llm.factory import create_llm
 from trustdoc.logging_setup import get_logger
-from trustdoc.models import CodeEntity, Source
+from trustdoc.models import CodeEntity, EntityType, Source
 from trustdoc.retrieval.types import Citation, Evidence, RetrievalMode
-from trustdoc.verification.engine import VerificationEngine
 from trustdoc.verification.resolver import EntityResolver, ResolutionKind
+
+if TYPE_CHECKING:
+    from trustdoc.verification.engine import VerificationEngine
 from trustdoc.workflows.ask import classify_llm_error
 from trustdoc.workflows.citations import analyze_citations
 from trustdoc.workflows.prompts import (
@@ -115,7 +117,12 @@ class GenerationService:
         self._retriever = retriever
         self._llm_source = llm
         self._llm: LLMBackend | None = llm if isinstance(llm, LLMBackend) else None
-        self._verifier = verification_engine or VerificationEngine(db, settings, retriever=retriever, llm=llm)
+        if verification_engine is None:
+            from trustdoc.verification.engine import VerificationEngine
+
+            self._verifier = VerificationEngine(db, settings, retriever=retriever, llm=llm)
+        else:
+            self._verifier = verification_engine
 
     def _get_llm(self) -> LLMBackend:
         if self._llm is None:
@@ -267,6 +274,7 @@ class GenerationService:
 
         # 5. Verification integration
         verification_report = None
+        verification_error: str | None = None
         if run_verify:
             t_ver = time.perf_counter()
             try:
@@ -276,15 +284,18 @@ class GenerationService:
                 )
             except Exception as exc:  # noqa: BLE001
                 log.warning("Verification failed for generated README in project %d: %s", project_id, exc)
+                verification_error = str(exc)
                 warnings.append(f"Verification could not be completed: {exc}")
             timings["verification_ms"] = _ms(t_ver)
 
         timings["total_ms"] = _ms(started)
 
+        status = GenerationStatus.VERIFICATION_ERROR if verification_error else GenerationStatus.COMPLETED
+
         return GenerationResult(
             project_id=project_id,
             kind=GenerationKind.README,
-            status=GenerationStatus.COMPLETED,
+            status=status,
             markdown=markdown,
             grounding=grounding,
             citations=citations,
@@ -297,6 +308,8 @@ class GenerationService:
             backend=gen_res.backend,
             is_stub_model=getattr(llm, "is_stub", False),
             finish_reason=gen_res.finish_reason,
+            error=verification_error,
+            error_kind="verification_failed" if verification_error else None,
             warnings=warnings,
             timings_ms=timings,
             prompt_stats=prompt_stats,
@@ -338,6 +351,10 @@ class GenerationService:
         target_entity = resolution.entity
         assert target_entity is not None
 
+        constructor = None
+        if target_entity.entity_type == EntityType.CLASS:
+            constructor = resolver.init_of(target_entity)
+
         cfg = self._settings.generate
         k = cfg.max_evidence_items if top_k is None else top_k
 
@@ -357,6 +374,7 @@ class GenerationService:
         direct_chunks = [
             c for c in source_chunks
             if c.entity_id == target_entity.id
+            or (constructor is not None and c.entity_id == constructor.id)
             or (c.start_line is not None and target_entity.start_line is not None
                 and c.start_line <= (target_entity.end_line or target_entity.start_line)
                 and (c.end_line or c.start_line) >= target_entity.start_line)
@@ -433,7 +451,11 @@ class GenerationService:
 
         # 3. Build API prompt
         bundle = build_api_prompt(
-            target_entity, evidence_items, max_items=cfg.max_evidence_items, max_chars=cfg.max_evidence_chars
+            target_entity,
+            evidence_items,
+            constructor=constructor,
+            max_items=cfg.max_evidence_items,
+            max_chars=cfg.max_evidence_chars,
         )
         shown_evidence = [AskEvidence(i.id, i.evidence, i.truncated, i.sanitized) for i in bundle.items]
         dropped_labels = [e.citation.label for e in bundle.dropped]
@@ -481,6 +503,7 @@ class GenerationService:
 
         # 6. Verification integration
         verification_report = None
+        verification_error: str | None = None
         if run_verify:
             t_ver = time.perf_counter()
             try:
@@ -492,15 +515,18 @@ class GenerationService:
                 )
             except Exception as exc:  # noqa: BLE001
                 log.warning("Verification failed for generated API doc %s: %s", target_entity.qualified_name, exc)
+                verification_error = str(exc)
                 warnings.append(f"Verification could not be completed: {exc}")
             timings["verification_ms"] = _ms(t_ver)
 
         timings["total_ms"] = _ms(started)
 
+        status = GenerationStatus.VERIFICATION_ERROR if verification_error else GenerationStatus.COMPLETED
+
         return GenerationResult(
             project_id=project_id,
             kind=GenerationKind.API,
-            status=GenerationStatus.COMPLETED,
+            status=status,
             markdown=markdown,
             target_entity=target_entity.qualified_name,
             grounding=grounding,
@@ -514,6 +540,8 @@ class GenerationService:
             backend=gen_res.backend,
             is_stub_model=getattr(llm, "is_stub", False),
             finish_reason=gen_res.finish_reason,
+            error=verification_error,
+            error_kind="verification_failed" if verification_error else None,
             warnings=warnings,
             timings_ms=timings,
             prompt_stats=prompt_stats,

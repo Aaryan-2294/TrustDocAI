@@ -162,3 +162,108 @@ The `compute_backoff` function accepts `attempt` and `base_delay`, and returns a
     # fail-on none -> should exit with code 0 despite findings
     code_none = main(["generate", "--project-id", str(cli_sample_project), "--kind", "api", "--entity", "compute_backoff", "--fail-on", "none"])
     assert code_none == 0
+
+
+def test_cli_verification_error_exits_1_and_refuses_to_write_by_default(cli_sample_project, monkeypatch, tmp_path, capsys):
+    from trustdoc.workflows.types import GenerationKind, GenerationResult, GenerationStatus
+
+    out_file = tmp_path / "unverified.md"
+
+    def fake_create(db, settings, **kwargs):
+        class BrokenVerifierService:
+            def generate(self, *args, **kwargs):
+                return GenerationResult(
+                    project_id=cli_sample_project,
+                    kind=GenerationKind.README,
+                    status=GenerationStatus.VERIFICATION_ERROR,
+                    markdown="# Generated Unverified Content\nSome text [E1]",
+                    error="Verification engine crashed on corrupted index",
+                    error_kind="verification_failed",
+                    warnings=["Verification could not be completed: Verification engine crashed on corrupted index"],
+                )
+        return BrokenVerifierService()
+
+    monkeypatch.setattr("trustdoc.workflows.create_generation_service", fake_create)
+
+    code = main([
+        "generate",
+        "--project-id", str(cli_sample_project),
+        "--kind", "readme",
+        "--output", str(out_file),
+    ])
+    assert code == 1
+    assert not out_file.exists()  # Did NOT write unverified output!
+    err = capsys.readouterr().err
+    assert "VERIFICATION ERROR (verification_failed)" in err
+    assert "Refused to write unverified documentation" in err
+    assert "Pass --allow-unverified to save anyway" in err
+
+
+def test_cli_verification_error_with_allow_unverified_writes_file_and_exits_1(cli_sample_project, monkeypatch, tmp_path, capsys):
+    from trustdoc.workflows.types import GenerationKind, GenerationResult, GenerationStatus
+
+    out_file = tmp_path / "unverified_saved.md"
+
+    def fake_create(db, settings, **kwargs):
+        class BrokenVerifierService:
+            def generate(self, *args, **kwargs):
+                return GenerationResult(
+                    project_id=cli_sample_project,
+                    kind=GenerationKind.README,
+                    status=GenerationStatus.VERIFICATION_ERROR,
+                    markdown="# Saved Unverified Content",
+                    error="Verification service unavailable",
+                    error_kind="verification_failed",
+                )
+        return BrokenVerifierService()
+
+    monkeypatch.setattr("trustdoc.workflows.create_generation_service", fake_create)
+
+    code = main([
+        "generate",
+        "--project-id", str(cli_sample_project),
+        "--kind", "readme",
+        "--output", str(out_file),
+        "--allow-unverified",
+    ])
+    assert code == 1
+    assert out_file.exists()  # DID write unverified output because --allow-unverified was passed
+    assert out_file.read_text(encoding="utf-8") == "# Saved Unverified Content"
+    err = capsys.readouterr().err
+    assert "Wrote unverified documentation to" in err
+    assert "--allow-unverified specified" in err
+
+
+def test_cli_verification_error_json_output(cli_sample_project, monkeypatch, capsys):
+    from trustdoc.workflows.types import GenerationKind, GenerationResult, GenerationStatus
+
+    def fake_create(db, settings, **kwargs):
+        class BrokenVerifierService:
+            def generate(self, *args, **kwargs):
+                return GenerationResult(
+                    project_id=cli_sample_project,
+                    kind=GenerationKind.API,
+                    status=GenerationStatus.VERIFICATION_ERROR,
+                    markdown="# Generated API Doc",
+                    target_entity="compute_backoff",
+                    error="Verification engine exploded",
+                    error_kind="verification_failed",
+                )
+        return BrokenVerifierService()
+
+    monkeypatch.setattr("trustdoc.workflows.create_generation_service", fake_create)
+
+    code = main([
+        "generate",
+        "--project-id", str(cli_sample_project),
+        "--kind", "api",
+        "--entity", "compute_backoff",
+        "--json",
+    ])
+    assert code == 1
+    out = capsys.readouterr().out
+    data = json.loads(out)
+    assert data["status"] == "verification_error"
+    assert data["error_kind"] == "verification_failed"
+    assert data["error"] == "Verification engine exploded"
+    assert data["markdown"] == "# Generated API Doc"

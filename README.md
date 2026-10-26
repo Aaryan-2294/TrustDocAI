@@ -791,9 +791,10 @@ python -m trustdoc generate --project-id 1 --kind readme
 # Generate API documentation for a specific function or class
 python -m trustdoc generate --project-id 1 --kind api --entity taskqueue.workers.compute_backoff
 
-# Safely write to a file (fails if destination exists without --force)
+# Safely write to a file (fails if destination exists without --force; will not write on verification failure unless --allow-unverified is given)
 python -m trustdoc generate --project-id 1 --kind readme --output generated_README.md
 python -m trustdoc generate --project-id 1 --kind readme --output generated_README.md --force
+python -m trustdoc generate --project-id 1 --kind readme --output generated_README.md --allow-unverified
 
 # Also run semantic (LLM-assisted) verification on generated behavioral claims
 python -m trustdoc generate --project-id 1 --kind api --entity compute_backoff --semantic
@@ -807,7 +808,7 @@ python -m trustdoc generate --project-id 1 --kind api --entity compute_backoff -
 
 Exit codes:
 * `0`: Generation and verification succeeded with no findings at or above `--fail-on` (or insufficient evidence abstention).
-* `1`: Operational failure (retrieval error or LLM failure).
+* `1`: Operational failure (retrieval error, LLM failure, or verification error).
 * `2`: Usage or configuration error (unknown project/entity, missing flags, existing file without `--force`).
 * `3`: Verification detected documentation defects at or above `--fail-on` (e.g. hallucinated parameter or contradicted return type).
 

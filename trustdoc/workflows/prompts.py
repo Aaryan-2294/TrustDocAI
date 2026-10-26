@@ -32,7 +32,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Sequence
 
-from trustdoc.models import CodeEntity, EntityType
+from trustdoc.models import CodeEntity, EntityType, Parameter, ParameterKind
 from trustdoc.retrieval.types import Evidence
 
 INSUFFICIENT_SENTINEL = "INSUFFICIENT_EVIDENCE"
@@ -200,20 +200,64 @@ Rules:
 6. Format the output in clean, structured Markdown."""
 
 
-def format_entity_signature(entity: CodeEntity) -> str:
-    params = []
-    for p in entity.parameters:
-        s = p.name
-        if p.annotation:
-            s += f": {p.annotation}"
-        if p.default is not None:
-            s += f" = {p.default}"
-        params.append(s)
-    param_str = ", ".join(params)
+def _format_parameter(p: Parameter) -> str:
+    if p.kind == ParameterKind.VAR_POSITIONAL:
+        prefix = "*"
+    elif p.kind == ParameterKind.VAR_KEYWORD:
+        prefix = "**"
+    else:
+        prefix = ""
+    s = f"{prefix}{p.name}"
+    if p.annotation:
+        s += f": {p.annotation}"
+    if p.default is not None:
+        s += f" = {p.default}"
+    return s
+
+
+def format_parameters(params: Sequence[Parameter]) -> str:
+    """Format parameter sequence into Python signature string respecting ParameterKind."""
+    items: list[str] = []
+    saw_pos_only = False
+    inserted_slash = False
+    inserted_star = False
+    has_var_pos = any(p.kind == ParameterKind.VAR_POSITIONAL for p in params)
+
+    for p in params:
+        if p.kind == ParameterKind.POSITIONAL_ONLY:
+            saw_pos_only = True
+            items.append(_format_parameter(p))
+        else:
+            if saw_pos_only and not inserted_slash:
+                items.append("/")
+                inserted_slash = True
+            if p.kind == ParameterKind.KEYWORD_ONLY and not has_var_pos and not inserted_star:
+                items.append("*")
+                inserted_star = True
+            items.append(_format_parameter(p))
+
+    if saw_pos_only and not inserted_slash:
+        items.append("/")
+
+    return ", ".join(items)
+
+
+def format_entity_signature(entity: CodeEntity, constructor: CodeEntity | None = None) -> str:
+    """Reconstruct an accurate Python signature for an entity or class."""
+    if entity.entity_type == EntityType.CLASS:
+        if constructor is not None and constructor.parameters:
+            c_params = list(constructor.parameters)
+            # Remove bound 'self' or 'cls' from constructor call signature
+            if c_params and c_params[0].name in ("self", "cls"):
+                c_params = c_params[1:]
+            if c_params:
+                param_str = format_parameters(c_params)
+                return f"class {entity.name}({param_str}):"
+        return f"class {entity.name}:"
+
+    param_str = format_parameters(entity.parameters)
     prefix = "async def " if entity.is_async else "def "
     ret = f" -> {entity.return_annotation}" if entity.return_annotation else ""
-    if entity.entity_type == EntityType.CLASS:
-        return f"class {entity.name}:"
     return f"{prefix}{entity.name}({param_str}){ret}"
 
 
@@ -258,6 +302,7 @@ def build_api_prompt(
     entity: CodeEntity,
     evidence: Sequence[Evidence],
     *,
+    constructor: CodeEntity | None = None,
     max_items: int,
     max_chars: int,
 ) -> PromptBundle:
@@ -265,14 +310,28 @@ def build_api_prompt(
     blocks = [render_evidence_block(item) for item in items] or ["(no evidence was supplied)"]
 
     clean_qname, _ = neutralize(entity.qualified_name)
-    sig = format_entity_signature(entity)
+    sig = format_entity_signature(entity, constructor=constructor)
+
+    target_params = entity.parameters
+    if entity.entity_type == EntityType.CLASS and constructor is not None:
+        c_params = list(constructor.parameters)
+        if c_params and c_params[0].name in ("self", "cls"):
+            c_params = c_params[1:]
+        target_params = c_params
+
     params_summary = []
-    for p in entity.parameters:
+    for p in target_params:
         default_str = f", default: {p.default}" if p.default is not None else ", required"
         ann_str = f", type: {p.annotation}" if p.annotation else ""
         params_summary.append(f"  - `{p.name}`{ann_str}{default_str}")
     param_text = "\n".join(params_summary) if params_summary else "  (none)"
-    ret_text = entity.return_annotation if entity.return_annotation else "None / unannotated"
+
+    if entity.entity_type == EntityType.CLASS:
+        ret_text = f"`{entity.name}` instance"
+    elif entity.return_annotation:
+        ret_text = entity.return_annotation
+    else:
+        ret_text = "None / unannotated"
 
     user_prompt = (
         f"ENTITY: `{clean_qname}`\n"

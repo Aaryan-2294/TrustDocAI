@@ -113,10 +113,25 @@ def render_generation_result(
         model = f" | model: {result.model_name} ({result.backend}){stand_in}"
 
     grounding = result.grounding.value.replace("_", " ") if result.grounding else "n/a"
-    lines.append(f"Result: {result.status.value}{model} | citation check: {grounding}")
+
+    if result.status == GenerationStatus.VERIFICATION_ERROR:
+        lines.append(
+            f"Result: VERIFICATION ERROR ({result.error_kind or 'verification_failed'}): "
+            f"{result.error}{model} | citation check: {grounding}"
+        )
+    else:
+        lines.append(f"Result: {result.status.value}{model} | citation check: {grounding}")
 
     if show_markdown and result.markdown:
-        lines += ["", "--- Generated Markdown ---", result.markdown.strip(), "--- End of Generated Markdown ---"]
+        if result.status == GenerationStatus.VERIFICATION_ERROR:
+            lines += [
+                "",
+                "--- Generated Markdown (UNVERIFIED) ---",
+                result.markdown.strip(),
+                "--- End of Generated Markdown (UNVERIFIED) ---",
+            ]
+        else:
+            lines += ["", "--- Generated Markdown ---", result.markdown.strip(), "--- End of Generated Markdown ---"]
 
     if result.citations:
         lines += ["", "Sources cited:"]
