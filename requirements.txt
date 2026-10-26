@@ -1,4 +1,3 @@
-# Core is stdlib-only; "pdf" adds PyMuPDF (Part 2), "retrieval" adds FAISS, BM25, sentence-transformers (Part 3).
-# Install the project in editable mode with dev extras:
--e .[dev,pdf,retrieval]
-# Later parts add: .[ui]  (or .[all])
+# Core is stdlib-only; "pdf" adds PyMuPDF (Part 2), "retrieval" adds FAISS, BM25, sentence-transformers (Part 3), "ui" adds Streamlit (Part 7).
+# Install the project in editable mode with dev, pdf, retrieval, and ui extras:
+-e .[dev,pdf,retrieval,ui]
