@@ -123,10 +123,18 @@ def main() -> None:
                 with st.expander("⚙️ Manage Project"):
                     confirm_delete = st.checkbox("Confirm deletion of this project", key="confirm_del_proj")
                     if st.button("Delete Project", type="secondary", disabled=not confirm_delete):
-                        delete_project(ctx.db, selected_id)
-                        st.session_state["active_project_id"] = 0
-                        st.success("Project deleted.")
-                        st.rerun()
+                        try:
+                            delete_project(
+                                ctx,
+                                selected_id,
+                                store=services.ingestion.store,
+                                index_manager=services.retriever.index_manager,
+                            )
+                            st.session_state["active_project_id"] = 0
+                            st.success("Project deleted.")
+                            st.rerun()
+                        except Exception as exc:  # noqa: BLE001
+                            st.error(f"Failed to delete project: {exc}")
 
         st.divider()
         with st.expander("ℹ️ System & Configuration"):
@@ -221,9 +229,17 @@ def main() -> None:
                 col_type.markdown(f"`{s.source_type.value}`")
                 col_size.markdown(f"{s.size_bytes / 1024:.1f} KB")
                 if col_action.button("🗑️ Delete", key=f"del_src_{s.id}"):
-                    delete_source(ctx.db, s.id)
-                    st.success(f"Deleted {s.name}")
-                    st.rerun()
+                    try:
+                        delete_source(
+                            ctx,
+                            s.id,
+                            store=services.ingestion.store,
+                            index_manager=services.retriever.index_manager,
+                        )
+                        st.success(f"Deleted {s.name}")
+                        st.rerun()
+                    except Exception as exc:  # noqa: BLE001
+                        st.error(f"Failed to delete source: {exc}")
 
     # ---------------------------------------------------------------- TAB 2: Ask
     with tab_ask:

@@ -34,6 +34,7 @@ from typing import Any
 from trustdoc.config import Settings
 from trustdoc.db import Database
 from trustdoc.exceptions import (
+    CleanupError,
     IndexCorruptError,
     IndexNotBuiltError,
     RetrievalError,
@@ -241,9 +242,16 @@ class IndexManager:
             self._cache.pop(project_id, None)
             path = self.index_dir(project_id)
             if path.exists():
-                shutil.rmtree(path)
-                return True
+                try:
+                    shutil.rmtree(path)
+                    return True
+                except OSError as exc:
+                    raise CleanupError(f"Failed to delete index directory for project {project_id}: {exc}") from exc
             return False
+
+    def invalidate(self, project_id: int) -> bool:
+        """Invalidate the in-memory cache and persisted index for project_id."""
+        return self.delete(project_id)
 
     # -------------------------------------------------------------- internals
     def _current_knowledge(self, project_id: int) -> tuple[str, int, int]:

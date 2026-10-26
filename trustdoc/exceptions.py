@@ -102,3 +102,8 @@ class DocumentSelectionError(TrustDocError):
 
     A usage error, deliberately NOT a VerificationError (which signals that a run itself failed).
     """
+
+# ------------------------------------------------------------------ storage & cleanup
+class CleanupError(TrustDocError):
+    """Storage or index cleanup failed during deletion."""
+

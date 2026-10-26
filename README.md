@@ -15,9 +15,10 @@ Requires Python 3.10+. The core is standard-library only; PDF ingestion needs Py
 ```bash
 python -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install -e ".[dev,pdf,retrieval]"  # or: pip install -r requirements.txt
-                                     # omit ",pdf" / ",retrieval" for a lightweight install; the
-                                     # tests that need them are then skipped, not failed
+pip install -e ".[dev,pdf,retrieval,ui]"  # or: pip install -r requirements.txt
+                                         # or: pip install -e ".[all]"
+                                         # omit extras for a lightweight install; tests requiring
+                                         # missing extras are skipped cleanly, not failed
 
 cp .env.example .env                 # optional; defaults work as-is
 python -m trustdoc init              # creates data/ and the SQLite database
@@ -886,8 +887,9 @@ streamlit run trustdoc/ui/app.py
 ## Tests
 
 ```bash
-pip install -e ".[dev,pdf,retrieval]"
-pytest                                    # everything
+# Complete suite (including all extras: PDF, retrieval, UI):
+pip install -e ".[dev,pdf,retrieval,ui]"  # or: pip install -e ".[all]"
+pytest                                    # runs full test suite
 pytest tests/test_retrieval_fusion.py tests/test_retrieval_threshold.py tests/test_faiss_index.py \
        tests/test_bm25_index.py tests/test_index_manager.py tests/test_retriever.py \
        tests/test_retrieval_integration.py tests/test_evaluation.py     # Part 3 core
@@ -903,7 +905,7 @@ pytest --cov=trustdoc                     # with coverage
 Tests never download models: embeddings and reranking use deterministic stand-ins (`HashingEmbedder`,
 `OverlapReranker`) or scripted rerankers, and the Sentence-Transformers wrapper code is tested against a
 fake `sentence_transformers` module. Part 4 and Part 6 tests use mocked retrievers and LLMs, a local HTTP server mimicking Ollama, and fake `torch`/`transformers` modules, so no LLM is ever downloaded. With a lightweight install the tests that need numpy / FAISS /
-rank_bm25 / PyMuPDF are skipped.
+rank_bm25 / PyMuPDF / Streamlit are skipped cleanly with clear explanations.
 
 ## Roadmap
 

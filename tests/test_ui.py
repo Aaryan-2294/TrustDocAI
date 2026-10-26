@@ -7,10 +7,19 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+# Ensure non-UI environments cleanly skip this entire module with a clear explanation
+pytest.importorskip(
+    "streamlit",
+    reason="Streamlit is required for UI tests (install with: pip install -e .[ui])",
+)
+
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 
 from trustdoc.app import AppContext
+from trustdoc.exceptions import CleanupError
+from trustdoc.ingestion.storage import UploadStore
 from trustdoc.models import (
     CodeEntity,
     EntityType,
@@ -130,6 +139,152 @@ def test_ui_database_queries(db):
     # 9. Delete project
     assert delete_project(db, proj.id) is True
     assert get_project(db, proj.id) is None
+
+
+# ------------------------------------------------------------------- deletion cleanup tests
+def test_delete_project_removes_records_uploads_and_indexes(tmp_path):
+    """Deleting a project removes DB records, upload files, and index files."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.ingestion import IngestionService
+    from trustdoc.retrieval.embedding import HashingEmbedder
+    from trustdoc.retrieval.index_manager import IndexManager
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    store = UploadStore(settings.storage.uploads_dir)
+    idx_mgr = IndexManager(ctx.db, settings, HashingEmbedder())
+    ingest_svc = IngestionService(ctx.db, settings)
+
+    # Create project and ingest a source
+    proj = create_project(ctx.db, "clean-proj")
+    res = ingest_svc.ingest_bytes(proj.id, "mod.py", b"def add(a: int, b: int) -> int: return a + b\n")
+
+    # Build index
+    idx_mgr.build(proj.id)
+
+    # Verify upload file and index directory exist
+    upload_file = store.resolve(res.source.stored_path)
+    assert upload_file.is_file()
+    proj_upload_dir = store.project_dir(proj.id)
+    assert proj_upload_dir.is_dir()
+    proj_index_dir = idx_mgr.index_dir(proj.id)
+    assert proj_index_dir.is_dir()
+    assert proj.id in idx_mgr._cache
+
+    # Delete project
+    success = delete_project(ctx, proj.id, store=store, index_manager=idx_mgr)
+    assert success is True
+
+    # Verify DB records deleted
+    assert get_project(ctx.db, proj.id) is None
+    with ctx.db.session() as s:
+        assert len(s.sources.list_for_project(proj.id)) == 0
+        assert len(s.chunks.list_for_project(proj.id)) == 0
+
+    # Verify upload directory and index directory removed
+    assert not proj_upload_dir.exists()
+    assert not proj_index_dir.exists()
+    assert proj.id not in idx_mgr._cache
+
+
+def test_delete_source_removes_unshared_upload_and_invalidates_index(tmp_path):
+    """Deleting an unshared source removes its upload file and invalidates index."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.ingestion import IngestionService
+    from trustdoc.retrieval.embedding import HashingEmbedder
+    from trustdoc.retrieval.index_manager import IndexManager
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    store = UploadStore(settings.storage.uploads_dir)
+    idx_mgr = IndexManager(ctx.db, settings, HashingEmbedder())
+    ingest_svc = IngestionService(ctx.db, settings)
+
+    proj = create_project(ctx.db, "src-del-proj")
+    res = ingest_svc.ingest_bytes(proj.id, "single.py", b"def single(): pass\n")
+    idx_mgr.build(proj.id)
+
+    upload_file = store.resolve(res.source.stored_path)
+    assert upload_file.is_file()
+    assert idx_mgr.index_dir(proj.id).is_dir()
+
+    # Delete source
+    assert delete_source(ctx, res.source.id, store=store, index_manager=idx_mgr) is True
+
+    # Verify source DB record deleted
+    with ctx.db.session() as s:
+        assert s.sources.get(res.source.id) is None
+
+    # Stored upload file must be removed because no other source references it
+    assert not upload_file.exists()
+
+    # Index must be invalidated (removed from disk and cache)
+    assert not idx_mgr.index_dir(proj.id).exists()
+    assert proj.id not in idx_mgr._cache
+    assert idx_mgr.is_stale(proj.id)
+
+
+def test_delete_source_shared_stored_path(tmp_path):
+    """Deleting one source with a shared stored path preserves file until all references are gone."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.ingestion import IngestionService
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    store = UploadStore(settings.storage.uploads_dir)
+    ingest_svc = IngestionService(ctx.db, settings)
+
+    proj = create_project(ctx.db, "shared-path-proj")
+    shared_bytes = b"# Identical content shared across two source names\ndef common(): return 42\n"
+
+    # Ingest source 1 and source 2 with identical content
+    res1 = ingest_svc.ingest_bytes(proj.id, "path_a.py", shared_bytes)
+    res2 = ingest_svc.ingest_bytes(proj.id, "path_b.py", shared_bytes)
+
+    assert res1.source.stored_path == res2.source.stored_path
+    upload_file = store.resolve(res1.source.stored_path)
+    assert upload_file.is_file()
+
+    # 1. Delete source 1: source 2 still references stored_path, so file MUST NOT be deleted
+    assert delete_source(ctx, res1.source.id, store=store) is True
+    assert upload_file.is_file()  # Still exists!
+
+    # 2. Delete source 2: now no sources reference stored_path, so file MUST be deleted
+    assert delete_source(ctx, res2.source.id, store=store) is True
+    assert not upload_file.exists()  # Cleaned up!
+
+
+def test_cleanup_failure_raises_explicit_error(tmp_path):
+    """Cleanup failures raise CleanupError explicitly and are not swallowed."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.exceptions import CleanupError
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    proj = create_project(ctx.db, "fail-proj")
+
+    # Mock store to fail on delete_project
+    mock_store = MagicMock()
+    mock_store.delete_project.side_effect = CleanupError("Permission denied on uploads")
+
+    with pytest.raises(CleanupError, match="Permission denied on uploads"):
+        delete_project(ctx, proj.id, store=mock_store)
 
 
 # ------------------------------------------------------------------- component tests
