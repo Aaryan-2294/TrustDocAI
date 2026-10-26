@@ -134,6 +134,111 @@ def _verify(args: argparse.Namespace) -> int:
     return 0
 
 
+def _generate(args: argparse.Namespace) -> int:
+    """Generate grounded documentation and verify it against project code.
+
+    Exit codes:
+    0 completed without findings at or above --fail-on (or insufficient evidence abstention);
+    1 operational failure (retrieval error or generation error);
+    2 usage/configuration problem (unknown project/entity, missing args, existing file without --force);
+    3 completed with documentation verification findings at or above --fail-on.
+    """
+    from trustdoc.exceptions import NotFoundError
+    from trustdoc.models import Severity
+    from trustdoc.workflows import (
+        GenerationKind,
+        GenerationStatus,
+        create_generation_service,
+        render_generation_result,
+    )
+
+    settings = Settings.from_env()
+    if args.provider or args.model:
+        llm_cfg = dataclasses.replace(
+            settings.llm,
+            provider=args.provider or settings.llm.provider,
+            model=args.model if args.model is not None else settings.llm.model,
+        )
+        settings = dataclasses.replace(settings, llm=llm_cfg)
+    ctx = bootstrap(settings)
+
+    project_id = args.project_id
+    if project_id is None:
+        with ctx.db.session() as s:
+            project = s.projects.get_by_name(args.project)
+        if project is None:
+            raise NotFoundError(f"No project named {args.project!r}")
+        project_id = project.id
+
+    out_path = Path(args.output).resolve() if args.output else None
+    if out_path and out_path.exists() and not args.force:
+        print(f"error: Output file already exists: {out_path}. Use --force to overwrite.", file=sys.stderr)
+        return 2
+
+    service = create_generation_service(ctx.db, ctx.settings)
+    result = service.generate(
+        project_id,
+        args.kind,
+        entity=args.entity,
+        top_k=args.top_k,
+        semantic=args.semantic,
+    )
+
+    if result.status in (GenerationStatus.RETRIEVAL_ERROR, GenerationStatus.GENERATION_ERROR):
+        if args.json:
+            print(json.dumps(result.to_dict(include_evidence_text=False), indent=2))
+        else:
+            text = render_generation_result(result, show_evidence=args.show_evidence)
+            print(text, file=sys.stderr)
+        return 2 if result.error_kind in ("not_configured", "dependency_missing") else 1
+
+    if result.status == GenerationStatus.VERIFICATION_ERROR:
+        should_write = bool(out_path and args.allow_unverified and result.markdown)
+        if should_write:
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(result.markdown, encoding="utf-8")
+
+        if args.json:
+            print(json.dumps(result.to_dict(include_evidence_text=False), indent=2))
+        else:
+            text = render_generation_result(
+                result,
+                show_evidence=args.show_evidence,
+                show_markdown=not should_write,
+                max_findings=args.max_findings,
+            )
+            print(text, file=sys.stderr)
+            if should_write:
+                print(f"\nWrote unverified documentation to {out_path} (--allow-unverified specified)", file=sys.stderr)
+            elif out_path:
+                print(f"\nRefused to write unverified documentation to {out_path}. Pass --allow-unverified to save anyway.", file=sys.stderr)
+        return 1
+
+    if out_path and result.status == GenerationStatus.COMPLETED and result.markdown:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(result.markdown, encoding="utf-8")
+
+    if args.json:
+        print(json.dumps(result.to_dict(include_evidence_text=False), indent=2))
+    else:
+        text = render_generation_result(
+            result,
+            show_evidence=args.show_evidence,
+            show_markdown=not bool(out_path),
+            max_findings=args.max_findings,
+        )
+        print(text)
+        if out_path and result.status == GenerationStatus.COMPLETED:
+            print(f"\nWrote generated documentation to {out_path}")
+
+    if args.fail_on != "none" and result.verification_report:
+        worst = result.verification_report.max_severity()
+        if worst is not None and worst.rank >= Severity(args.fail_on).rank:
+            return 3
+
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="trustdoc", description="TrustDoc AI command-line tools")
     parser.add_argument("--version", action="version", version=f"trustdoc {__version__}")
@@ -191,9 +296,36 @@ def main(argv: Sequence[str] | None = None) -> int:
     ver.add_argument("--max-findings", type=int, default=10, help="findings shown per severity (default 10)")
     ver.add_argument("--show-run", type=int, metavar="RUN_ID", help="print a stored historical run instead of verifying again")
     ver.add_argument("--json", action="store_true", help="print the full structured report as JSON")
+
+    gen = sub.add_parser(
+        "generate",
+        help="generate grounded README or API documentation, verified with TrustDoc",
+        description="Generate documentation grounded in retrieved evidence from an ingested project. "
+                    "Output is automatically verified against the project code index using the Part 5 VerificationEngine.",
+    )
+    gt = gen.add_mutually_exclusive_group(required=True)
+    gt.add_argument("--project-id", type=int, help="id of the project")
+    gt.add_argument("--project", help="name of the project")
+    gen.add_argument("--kind", choices=["readme", "api"], required=True, help="kind of documentation to generate")
+    gen.add_argument("--entity", default=None, help="qualified or simple name of the Python entity to document (required for --kind api)")
+    gen.add_argument("--output", "-o", default=None, help="write generated Markdown to this file path (safe, will not overwrite by default)")
+    gen.add_argument("--force", action="store_true", help="overwrite destination file if it already exists")
+    gen.add_argument("--allow-unverified", action="store_true", help="write output file even if automated verification fails")
+    gen.add_argument("--top-k", type=int, default=None, help="evidence items to retrieve (default: config)")
+    gen.add_argument("--semantic", action="store_true", help="also run LLM-assisted semantic checks on verified generated claims")
+    gen.add_argument("--provider", default=None, help="override TRUSTDOC_LLM_PROVIDER (ollama|transformers|stub)")
+    gen.add_argument("--model", default=None, help="override TRUSTDOC_LLM_MODEL")
+    gen.add_argument("--fail-on", choices=["none", "critical", "high", "medium", "low"], default="high",
+                     help="exit with status 3 if any verification finding at or above this severity exists (default: high)")
+    gen.add_argument("--max-findings", type=int, default=10, help="findings shown per severity in report (default 10)")
+    gen.add_argument("--show-evidence", action="store_true", help="also print short snippets of the evidence used")
+    gen.add_argument("--json", action="store_true", help="print the full structured result as JSON")
+
     args = parser.parse_args(argv)
     if args.command == "verify" and not args.show_run and args.project_id is None and not args.project:
         parser.error("verify needs --project-id or --project (or --show-run RUN_ID)")
+    if args.command == "generate" and args.kind == "api" and not args.entity:
+        parser.error("generate with --kind api requires --entity")
 
     try:
         if args.command == "eval-retrieval":
@@ -202,9 +334,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _ask(args)
         if args.command == "verify":
             return _verify(args)
+        if args.command == "generate":
+            return _generate(args)
         ctx = bootstrap(Settings.from_env())
     except TrustDocError as exc:
-        print(f"error: {exc}", file=sys.stderr if args.command in ("ask", "verify") else sys.stdout)
+        print(f"error: {exc}", file=sys.stderr if args.command in ("ask", "verify", "generate") else sys.stdout)
         return 2
 
     if args.command == "init":

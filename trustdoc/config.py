@@ -97,6 +97,14 @@ class VerificationConfig:
 
 
 @dataclass(frozen=True)
+class GenerationConfig:
+    """Parameters and limits for documentation generation (Part 6)."""
+
+    max_evidence_items: int = 10
+    max_evidence_chars: int = 8000
+
+
+@dataclass(frozen=True)
 class Settings:
     storage: StorageConfig
     logging: LoggingConfig = field(default_factory=LoggingConfig)
@@ -105,6 +113,7 @@ class Settings:
     llm: LLMConfig = field(default_factory=LLMConfig)
     ask: AskConfig = field(default_factory=AskConfig)
     verification: VerificationConfig = field(default_factory=VerificationConfig)
+    generate: GenerationConfig = field(default_factory=GenerationConfig)
 
     # ------------------------------------------------------------------ build
     @classmethod
@@ -214,7 +223,13 @@ class Settings:
             max_semantic_claims=_as_int(get("VERIFY_MAX_SEMANTIC_CLAIMS", v.max_semantic_claims), "VERIFY_MAX_SEMANTIC_CLAIMS"),
         )
 
-        settings = cls(storage, logging_cfg, chunking, retrieval, llm, ask, verification)
+        g = GenerationConfig()
+        generate = GenerationConfig(
+            max_evidence_items=_as_int(get("GENERATE_MAX_EVIDENCE_ITEMS", g.max_evidence_items), "GENERATE_MAX_EVIDENCE_ITEMS"),
+            max_evidence_chars=_as_int(get("GENERATE_MAX_EVIDENCE_CHARS", g.max_evidence_chars), "GENERATE_MAX_EVIDENCE_CHARS"),
+        )
+
+        settings = cls(storage, logging_cfg, chunking, retrieval, llm, ask, verification, generate)
         settings.validate()
         return settings
 
@@ -265,6 +280,11 @@ class Settings:
         bad = [x for x in v.evidence_source_types if x not in ("python", "markdown", "pdf")]
         if bad or not v.evidence_source_types:
             raise ConfigError("VERIFY_EVIDENCE_TYPES must list one or more of: python, markdown, pdf")
+        gen = self.generate
+        if gen.max_evidence_items <= 0:
+            raise ConfigError("GENERATE_MAX_EVIDENCE_ITEMS must be positive")
+        if gen.max_evidence_chars < 200:
+            raise ConfigError("GENERATE_MAX_EVIDENCE_CHARS must be at least 200")
 
     @property
     def log_level_int(self) -> int:

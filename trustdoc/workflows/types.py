@@ -124,3 +124,91 @@ class AskResult:
             "error": self.error, "error_kind": self.error_kind, "prompt_stats": self.prompt_stats,
             "timings_ms": self.timings_ms, "claims_verified": self.claims_verified,
         }
+
+
+# ---------------------------------------------------------------- generation (Part 6)
+class GenerationKind(str, Enum):
+    README = "readme"
+    API = "api"
+
+
+class GenerationStatus(str, Enum):
+    COMPLETED = "completed"
+    INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+    RETRIEVAL_ERROR = "retrieval_error"
+    GENERATION_ERROR = "generation_error"
+    VERIFICATION_ERROR = "verification_error"
+    VERIFICATION_SKIPPED = "verification_skipped"
+
+
+@dataclass
+class GenerationResult:
+    project_id: int
+    kind: GenerationKind
+    status: GenerationStatus
+    markdown: str
+    target_entity: str | None = None
+    grounding: GroundingLevel | None = None
+    citations: list[AskCitation] = field(default_factory=list)
+    invalid_citation_ids: list[str] = field(default_factory=list)
+    evidence: list[AskEvidence] = field(default_factory=list)
+    dropped_evidence: list[str] = field(default_factory=list)
+    verification_report: Any | None = None
+    raw_output: str | None = None
+    model_name: str | None = None
+    backend: str | None = None
+    is_stub_model: bool = False
+    finish_reason: str | None = None
+    error: str | None = None
+    error_kind: str | None = None
+    warnings: list[str] = field(default_factory=list)
+    timings_ms: dict[str, float] = field(default_factory=dict)
+    prompt_stats: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def trust_score(self) -> float | None:
+        if self.verification_report and self.verification_report.run:
+            return self.verification_report.run.trust_score
+        return None
+
+    @property
+    def findings(self) -> list[Any]:
+        if self.verification_report:
+            return self.verification_report.findings
+        return []
+
+    @property
+    def claims(self) -> list[Any]:
+        if self.verification_report:
+            return self.verification_report.claims
+        return []
+
+    @property
+    def is_verified(self) -> bool:
+        return self.status == GenerationStatus.COMPLETED and self.verification_report is not None
+
+    def to_dict(self, include_evidence_text: bool = False) -> dict[str, Any]:
+        return {
+            "project_id": self.project_id,
+            "kind": self.kind.value,
+            "status": self.status.value,
+            "is_verified": self.is_verified,
+            "markdown": self.markdown,
+            "target_entity": self.target_entity,
+            "trust_score": self.trust_score,
+            "grounding": self.grounding.value if self.grounding else None,
+            "citations": [c.to_dict() for c in self.citations],
+            "invalid_citation_ids": self.invalid_citation_ids,
+            "evidence": [e.to_dict(include_evidence_text) for e in self.evidence],
+            "dropped_evidence": self.dropped_evidence,
+            "verification_report": self.verification_report.to_dict() if self.verification_report else None,
+            "model_name": self.model_name,
+            "backend": self.backend,
+            "is_stub_model": self.is_stub_model,
+            "error": self.error,
+            "error_kind": self.error_kind,
+            "warnings": self.warnings,
+            "timings_ms": self.timings_ms,
+            "prompt_stats": self.prompt_stats,
+        }
+
