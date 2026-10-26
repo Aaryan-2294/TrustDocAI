@@ -97,6 +97,42 @@ def get_project(db: Database, project_id: int) -> Project | None:
         return s.projects.get(project_id)
 
 
+def _safe_resolve_upload_path(store: UploadStore, stored_path: str) -> str:
+    """Best-effort resolution of stored upload path for error reporting.
+
+    If path resolution fails (e.g. invalid or escaping path), returns the original
+    stored-path value and the resolution error rather than raising.
+    """
+    try:
+        return str(store.resolve(stored_path))
+    except Exception as exc:  # noqa: BLE001
+        return f"{stored_path} (resolution failed: {exc})"
+
+
+def _safe_resolve_project_upload_dir(store: UploadStore, project_id: int) -> str:
+    """Best-effort resolution of project upload directory for error reporting.
+
+    If directory resolution fails, returns the project identifier and the resolution
+    error rather than raising.
+    """
+    try:
+        return str(store.project_dir(project_id))
+    except Exception as exc:  # noqa: BLE001
+        return f"project_{project_id} (resolution failed: {exc})"
+
+
+def _safe_resolve_index_dir(
+    index_manager: IndexManager | None, settings: Settings, project_id: int
+) -> str:
+    """Best-effort resolution of project index directory for error reporting."""
+    try:
+        if index_manager is not None:
+            return str(index_manager.index_dir(project_id))
+        return str((Path(settings.storage.indexes_dir) / f"project_{int(project_id)}").resolve())
+    except Exception as exc:  # noqa: BLE001
+        return f"project_{project_id} (resolution failed: {exc})"
+
+
 def delete_project(
     target: AppContext | Database,
     project_id: int,
@@ -129,11 +165,16 @@ def delete_project(
     cleanup_errors: list[str] = []
 
     # 2. Filesystem cleanup of uploaded files
-    upload_store = store or UploadStore(settings.storage.uploads_dir)
+    upload_store = store
     try:
+        if upload_store is None:
+            upload_store = UploadStore(settings.storage.uploads_dir)
         upload_store.delete_project(project_id)
     except Exception as exc:  # noqa: BLE001
-        proj_upload_dir = upload_store.project_dir(project_id)
+        if upload_store is not None:
+            proj_upload_dir = _safe_resolve_project_upload_dir(upload_store, project_id)
+        else:
+            proj_upload_dir = f"project_{project_id}"
         cleanup_errors.append(f"upload directory ({proj_upload_dir}): {exc}")
 
     # 3. Cleanup of persisted and in-memory indexes (attempted even if upload cleanup failed)
@@ -145,11 +186,7 @@ def delete_project(
             if idx_dir.is_dir() and idx_dir.is_relative_to(Path(settings.storage.indexes_dir).resolve()):
                 shutil.rmtree(idx_dir)
     except Exception as exc:  # noqa: BLE001
-        idx_path = (
-            index_manager.index_dir(project_id)
-            if index_manager is not None
-            else (Path(settings.storage.indexes_dir) / f"project_{int(project_id)}")
-        )
+        idx_path = _safe_resolve_index_dir(index_manager, settings, project_id)
         cleanup_errors.append(f"index directory ({idx_path}): {exc}")
 
     if cleanup_errors:
@@ -215,11 +252,16 @@ def delete_source(
 
     # 2. Cleanup stored file if no remaining source references it
     if stored_path and not still_used:
-        upload_store = store or UploadStore(settings.storage.uploads_dir)
+        upload_store = store
         try:
+            if upload_store is None:
+                upload_store = UploadStore(settings.storage.uploads_dir)
             upload_store.delete(stored_path)
         except Exception as exc:  # noqa: BLE001
-            resolved_file = upload_store.resolve(stored_path)
+            if upload_store is not None:
+                resolved_file = _safe_resolve_upload_path(upload_store, stored_path)
+            else:
+                resolved_file = str(stored_path)
             cleanup_errors.append(f"stored file ({resolved_file}): {exc}")
 
     # 3. Invalidate or remove the project's index so the next retrieval rebuilds it
@@ -233,11 +275,7 @@ def delete_source(
                 if idx_dir.is_dir() and idx_dir.is_relative_to(Path(settings.storage.indexes_dir).resolve()):
                     shutil.rmtree(idx_dir)
         except Exception as exc:  # noqa: BLE001
-            idx_path = (
-                index_manager.index_dir(project_id)
-                if index_manager is not None
-                else (Path(settings.storage.indexes_dir) / f"project_{int(project_id)}")
-            )
+            idx_path = _safe_resolve_index_dir(index_manager, settings, project_id)
             cleanup_errors.append(f"index directory ({idx_path}): {exc}")
 
     if cleanup_errors:

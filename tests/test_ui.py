@@ -388,6 +388,145 @@ def test_delete_project_both_fail_aggregates_errors(tmp_path):
     assert str(Path("indexes/project_1")) in err
 
 
+def test_delete_source_invalid_stored_path_defensive_cleanup(tmp_path):
+    """An invalid stored path causing resolve() to raise does not prevent index invalidation."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.exceptions import CleanupError
+    from trustdoc.ingestion import IngestionService
+    from trustdoc.retrieval.embedding import HashingEmbedder
+    from trustdoc.retrieval.index_manager import IndexManager
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    store = UploadStore(settings.storage.uploads_dir)
+    idx_mgr = IndexManager(ctx.db, settings, HashingEmbedder())
+    ingest_svc = IngestionService(ctx.db, settings)
+
+    proj = create_project(ctx.db, "invalid-stored-path-proj")
+    res = ingest_svc.ingest_bytes(proj.id, "valid.py", b"def valid(): pass\n")
+    idx_mgr.build(proj.id)
+
+    assert idx_mgr.index_dir(proj.id).is_dir()
+    assert proj.id in idx_mgr._cache
+
+    # Corrupt stored_path in the DB to a path-traversal / escaping path
+    bad_stored_path = "../../escaping/malicious.py"
+    with ctx.db.session() as s:
+        s.conn.execute(
+            "UPDATE sources SET stored_path = ? WHERE id = ?",
+            (bad_stored_path, res.source.id),
+        )
+
+    with pytest.raises(CleanupError) as exc_info:
+        delete_source(ctx, res.source.id, store=store, index_manager=idx_mgr)
+
+    err = str(exc_info.value)
+    # 1. Error message includes the original stored path, resolution error, and safe retry message
+    assert bad_stored_path in err
+    assert "resolution failed" in err
+    assert "Stored path escapes the uploads directory" in err
+    assert "retried safely" in err
+
+    # 2. Database source record was deleted
+    with ctx.db.session() as s:
+        assert s.sources.get(res.source.id) is None
+
+    # 3. Index invalidation was STILL attempted and succeeded!
+    assert not idx_mgr.index_dir(proj.id).exists()
+    assert proj.id not in idx_mgr._cache
+
+
+def test_delete_project_project_dir_failure_defensive_cleanup(tmp_path):
+    """If resolving project upload directory fails in the exception handler, index cleanup still succeeds."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.exceptions import CleanupError, InvalidSourceNameError
+    from trustdoc.ingestion import IngestionService
+    from trustdoc.retrieval.embedding import HashingEmbedder
+    from trustdoc.retrieval.index_manager import IndexManager
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    idx_mgr = IndexManager(ctx.db, settings, HashingEmbedder())
+    ingest_svc = IngestionService(ctx.db, settings)
+
+    proj = create_project(ctx.db, "proj-res-fail")
+    ingest_svc.ingest_bytes(proj.id, "m.py", b"def f(): pass\n")
+    idx_mgr.build(proj.id)
+
+    assert idx_mgr.index_dir(proj.id).is_dir()
+    assert proj.id in idx_mgr._cache
+
+    mock_store = MagicMock()
+    mock_store.delete_project.side_effect = CleanupError("Store delete error")
+    mock_store.project_dir.side_effect = InvalidSourceNameError("Project dir escape error")
+
+    with pytest.raises(CleanupError) as exc_info:
+        delete_project(ctx, proj.id, store=mock_store, index_manager=idx_mgr)
+
+    err = str(exc_info.value)
+    assert "Store delete error" in err
+    assert "resolution failed: Project dir escape error" in err
+    assert f"project_{proj.id}" in err
+    assert "retried safely" in err
+
+    # Project deleted from DB
+    assert get_project(ctx.db, proj.id) is None
+
+    # Index still cleaned up!
+    assert not idx_mgr.index_dir(proj.id).exists()
+    assert proj.id not in idx_mgr._cache
+
+
+def test_delete_source_resolution_failure_and_index_failure_aggregates(tmp_path):
+    """When both unsafe stored path resolution and index invalidation fail, both are reported."""
+    from trustdoc.app import bootstrap
+    from trustdoc.config import Settings
+    from trustdoc.exceptions import CleanupError
+    from trustdoc.ingestion import IngestionService
+    from trustdoc.retrieval.embedding import HashingEmbedder
+    from trustdoc.retrieval.index_manager import IndexManager
+
+    settings = Settings.from_env({
+        "TRUSTDOC_DATA_DIR": str(tmp_path / "data"),
+        "TRUSTDOC_LOG_TO_FILE": "false",
+    })
+    ctx = bootstrap(settings)
+    store = UploadStore(settings.storage.uploads_dir)
+    idx_mgr = IndexManager(ctx.db, settings, HashingEmbedder())
+    ingest_svc = IngestionService(ctx.db, settings)
+
+    proj = create_project(ctx.db, "dual-src-fail-proj")
+    res = ingest_svc.ingest_bytes(proj.id, "m.py", b"def f(): pass\n")
+    idx_mgr.build(proj.id)
+
+    bad_stored_path = "../../escaping/malicious.py"
+    with ctx.db.session() as s:
+        s.conn.execute(
+            "UPDATE sources SET stored_path = ? WHERE id = ?",
+            (bad_stored_path, res.source.id),
+        )
+
+    mock_idx_mgr = MagicMock()
+    mock_idx_mgr.index_dir.return_value = Path("indexes/project_1")
+    mock_idx_mgr.delete.side_effect = CleanupError("Index lock error")
+
+    with pytest.raises(CleanupError) as exc_info:
+        delete_source(ctx, res.source.id, store=store, index_manager=mock_idx_mgr)
+
+    err = str(exc_info.value)
+    assert bad_stored_path in err
+    assert "resolution failed" in err
+    assert "Index lock error" in err
+
+
 # ------------------------------------------------------------------- component tests
 def test_heuristic_disclaimer_content():
     """Verify that the heuristic disclaimer explicitly mentions non-calibrated truth."""
