@@ -77,7 +77,7 @@ data/                runtime data (gitignored): trustdoc.db, uploads/, logs/
 ## Architecture (current)
 
 ```
-cli / (future Streamlit UI)
+cli / Streamlit Web UI (Part 7)
         |
      app.bootstrap() --> Settings, logging, Database
         |
