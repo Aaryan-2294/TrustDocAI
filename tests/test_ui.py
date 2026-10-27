@@ -621,6 +621,35 @@ def test_render_trust_score_card_score_report(mock_caption, mock_md, mock_cols):
     assert "88.5" in col1.markdown.call_args[0][0]
     mock_caption.assert_called()
 
+@patch("streamlit.columns")
+@patch("streamlit.markdown")
+@patch("streamlit.caption")
+def test_render_trust_score_card_real_scoring_penalties(mock_caption, mock_md, mock_cols):
+    col1 = MagicMock()
+    col2 = MagicMock()
+    mock_cols.return_value = [col1, col2]
+
+    report = ScoreReport(
+        final=20.0,
+        base=40.0,
+        components=[
+            TrustScoreComponent(name="accuracy", raw_score=0.2, weight=0.67, contribution=13.3),
+            TrustScoreComponent(name="grounding", raw_score=0.8, weight=0.33, contribution=26.7),
+            TrustScoreComponent(name="severity_penalty", raw_score=0.2, weight=1.0, contribution=-20.0, detail="4 high x 5"),
+        ],
+        penalties=[{"severity": "high", "count": 4, "points_each": 5.0}],
+        inputs={},
+        notes=[],
+    )
+
+    render_trust_score_card(report)
+    rendered_calls = [c[0][0] for c in col2.markdown.call_args_list]
+    rendered_text = " ".join(rendered_calls)
+    assert "-20.0 pts" in rendered_text
+    assert "High Findings" in rendered_text
+    assert "-0.0 pts" not in rendered_text
+
+
 
 @patch("streamlit.columns")
 def test_render_claim_counts(mock_cols):

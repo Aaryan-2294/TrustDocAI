@@ -2,6 +2,7 @@
 
 from trustdoc.workflows.ask import AskService, create_ask_service
 from trustdoc.workflows.citations import CitationAnalysis, analyze_citations
+from trustdoc.workflows.code_facts import CodeFactResolver
 from trustdoc.workflows.generation import GenerationService, create_generation_service
 from trustdoc.workflows.prompts import (
     PromptBundle,
@@ -26,9 +27,9 @@ from trustdoc.workflows.types import (
 
 __all__ = [
     "AskService", "create_ask_service", "AskResult", "AskStatus", "AskCitation", "AskEvidence",
+    "CodeFactResolver",
     "GroundingLevel", "RetrievalSummary", "analyze_citations", "CitationAnalysis",
     "build_prompt", "build_readme_prompt", "build_api_prompt", "format_parameters", "format_entity_signature",
     "PromptBundle", "render_ask_result", "render_generation_result",
     "GenerationService", "create_generation_service", "GenerationKind", "GenerationStatus", "GenerationResult",
 ]
-

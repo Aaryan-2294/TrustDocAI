@@ -1,0 +1,53 @@
+{
+  "name": "retry-task-queue-held-out-v1",
+  "description": "Held-out evaluation dataset of 5 queries against the canonical retry-task-queue project (workers.py and READme.md). Not used during prompt or resolver design.",
+  "project_name": "retry-task-queue",
+  "queries": [
+    {
+      "id": "h01-jitter-default",
+      "category": "signature_defaults",
+      "text": "What is the default value of the jitter parameter in compute_backoff?",
+      "is_answerable": true,
+      "expected_answer": "jitter defaults to 0.1",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `compute_backoff(attempt, base_seconds=0.5, jitter=0.1)`"}
+      ]
+    },
+    {
+      "id": "h02-max-attempts-annotation",
+      "category": "signature_defaults",
+      "text": "What is the type annotation of max_attempts in should_retry?",
+      "is_answerable": true,
+      "expected_answer": "int (with default 3)",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.should_retry"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `should_retry(attempt, max_attempts=3)`"}
+      ]
+    },
+    {
+      "id": "h03-unans-celery",
+      "category": "unanswerable_missing",
+      "text": "How do you configure a Celery broker URL for the task queue?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (Celery is not used in this project).",
+      "relevant": []
+    },
+    {
+      "id": "h04-fp-timeout",
+      "category": "false_premise",
+      "text": "Does compute_backoff accept a timeout parameter?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (compute_backoff does not have a timeout parameter).",
+      "relevant": []
+    },
+    {
+      "id": "h05-unans-kafka",
+      "category": "unanswerable_missing",
+      "text": "What Kafka topic is used for task queue events?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (Kafka is not used in this project).",
+      "relevant": []
+    }
+  ]
+}

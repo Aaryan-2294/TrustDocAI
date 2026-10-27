@@ -1,0 +1,1740 @@
+{
+  "summary": {
+    "dataset_name": "retry-task-queue-eval-v1",
+    "total_queries": 20,
+    "answerable_count": 12,
+    "unanswerable_count": 8,
+    "retrieval": {
+      "recall_at_1": 83.3,
+      "recall_at_3": 100.0,
+      "recall_at_5": 100.0,
+      "mrr": 0.917
+    },
+    "score_distribution": {
+      "gold_scores": {
+        "count": 22,
+        "mean": 5.04,
+        "min": -0.04,
+        "max": 7.79
+      },
+      "negative_scores": {
+        "count": 78,
+        "mean": -4.0,
+        "min": -11.0,
+        "max": 6.61
+      }
+    },
+    "end_to_end_ask": {
+      "answerable_supported_count": 0,
+      "answerable_supported_pct": 0.0,
+      "false_abstentions_count": 11,
+      "false_abstentions_pct": 91.7,
+      "unanswerable_true_abstentions_count": 8,
+      "unanswerable_true_abstentions_pct": 100.0,
+      "unanswerable_hallucinations_count": 0,
+      "citation_validity_pct": 100.0
+    },
+    "threshold_tradeoff": {
+      "-15.0": {
+        "threshold": -15.0,
+        "answerable_gold_retained_pct": 100.0,
+        "unanswerable_abstention_pct": 0.0,
+        "false_positives": 8,
+        "false_negatives": 0
+      },
+      "-10.0": {
+        "threshold": -10.0,
+        "answerable_gold_retained_pct": 100.0,
+        "unanswerable_abstention_pct": 0.0,
+        "false_positives": 8,
+        "false_negatives": 0
+      },
+      "-5.0": {
+        "threshold": -5.0,
+        "answerable_gold_retained_pct": 100.0,
+        "unanswerable_abstention_pct": 37.5,
+        "false_positives": 5,
+        "false_negatives": 0
+      },
+      "-2.0": {
+        "threshold": -2.0,
+        "answerable_gold_retained_pct": 100.0,
+        "unanswerable_abstention_pct": 50.0,
+        "false_positives": 4,
+        "false_negatives": 0
+      },
+      "-1.0": {
+        "threshold": -1.0,
+        "answerable_gold_retained_pct": 100.0,
+        "unanswerable_abstention_pct": 50.0,
+        "false_positives": 4,
+        "false_negatives": 0
+      },
+      "0.0": {
+        "threshold": 0.0,
+        "answerable_gold_retained_pct": 100.0,
+        "unanswerable_abstention_pct": 50.0,
+        "false_positives": 4,
+        "false_negatives": 0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "q01-dep",
+      "category": "factual_explicit",
+      "text": "What external dependencies does the retry-task-queue project require?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        5
+      ],
+      "retrieval": {
+        "retrieval_ms": 19921.547599995392,
+        "ranked_chunk_ids": [
+          5,
+          1,
+          3,
+          4,
+          2
+        ],
+        "ranked_scores": [
+          4.03404426574707,
+          -1.2153549194335938,
+          -1.254065990447998,
+          -1.6615095138549805,
+          -2.3677234649658203
+        ],
+        "evidence_chunk_ids": [
+          5,
+          1,
+          3,
+          4,
+          2
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 13233.20870000316,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not explicitly state any external dependencies for the retry-task-queue project.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not explicitly state any external dependencies for the retry-task-queue project.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 1,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 1,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q02-formula",
+      "category": "factual_explicit",
+      "text": "What is the mathematical formula used to calculate the retry delay in compute_backoff?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        2,
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 304.9299999984214,
+        "ranked_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "ranked_scores": [
+          7.7915849685668945,
+          7.417339324951172,
+          5.824746131896973,
+          -0.6883028745651245,
+          -1.9617538452148438
+        ],
+        "evidence_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 10175.121500004025,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence provided does not directly contain the mathematical formula used to calculate the retry delay in `compute_backoff`. The code snippet only shows the function definition and its parameters, but does not include the formula itself.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence provided does not directly contain the mathematical formula used to calculate the retry delay in `compute_backoff`. The code snippet only shows the function definition and its parameters, but does not include the formula itself.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q03-err-attempt",
+      "category": "factual_explicit",
+      "text": "What exception is raised if attempt is negative in compute_backoff?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        2,
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 283.15749999455875,
+        "ranked_chunk_ids": [
+          7,
+          2,
+          3,
+          4,
+          8
+        ],
+        "ranked_scores": [
+          4.624871730804443,
+          4.532161712646484,
+          0.15366439521312714,
+          -4.024191856384277,
+          -6.052087783813477
+        ],
+        "evidence_chunk_ids": [
+          7,
+          2,
+          3,
+          4,
+          8
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 11528.130400001828,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state that a `ValueError` is raised if the attempt is negative in `compute_backoff`. The code only checks if the attempt is non-negative, but it does not explicitly raise an error for negative attempts.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state that a `ValueError` is raised if the attempt is negative in `compute_backoff`. The code only checks if the attempt is non-negative, but it does not explicitly raise an error for negative attempts.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q04-err-delay",
+      "category": "factual_explicit",
+      "text": "What exception is raised if base_seconds or jitter is negative in compute_backoff?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        2,
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 336.7339999967953,
+        "ranked_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "ranked_scores": [
+          5.992729187011719,
+          5.808433532714844,
+          -4.878419876098633,
+          -7.531501770019531,
+          -10.744776725769043
+        ],
+        "evidence_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 12847.651600000972,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state that a `ValueError` is raised if `base_seconds` or `jitter` is negative in `compute_backoff`. The code only checks if `attempt` is non-negative and less than `max_attempts`, but does not explicitly raise an error for negative values.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state that a `ValueError` is raised if `base_seconds` or `jitter` is negative in `compute_backoff`. The code only checks if `attempt` is non-negative and less than `max_attempts`, but does not explicitly raise an error for negative values.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q05-import",
+      "category": "factual_explicit",
+      "text": "Which standard library module does workers.py import?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        6
+      ],
+      "retrieval": {
+        "retrieval_ms": 420.58130000077654,
+        "ranked_chunk_ids": [
+          6,
+          8,
+          4,
+          7,
+          5
+        ],
+        "ranked_scores": [
+          2.6525635719299316,
+          -4.125038146972656,
+          -4.560207366943359,
+          -5.3204426765441895,
+          -8.668899536132812
+        ],
+        "evidence_chunk_ids": [
+          6,
+          8,
+          4,
+          7,
+          5
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 8373.729999999341,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state which standard library module workers.py imports.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state which standard library module workers.py imports.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 1,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 1,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 1,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q06-backoff-defaults",
+      "category": "signature_defaults",
+      "text": "What are the default values for base_seconds and jitter in compute_backoff?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        2,
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 356.47630000312347,
+        "ranked_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "ranked_scores": [
+          7.265858173370361,
+          6.224916934967041,
+          -3.552622079849243,
+          -9.738569259643555,
+          -10.683036804199219
+        ],
+        "evidence_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 18736.751299999014,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence provided does not directly state the default values for `base_seconds` and `jitter` in the `compute_backoff` function. The function signature and parameter defaults are provided, but they do not specify the default values for these parameters. Therefore, we cannot determine the default values based solely on the given evidence.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q07-backoff-ret",
+      "category": "signature_defaults",
+      "text": "What is the return type of compute_backoff?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 302.26190000394126,
+        "ranked_chunk_ids": [
+          7,
+          2,
+          4,
+          3,
+          8
+        ],
+        "ranked_scores": [
+          3.3183417320251465,
+          3.0727736949920654,
+          1.7129850387573242,
+          -6.981393814086914,
+          -7.926501274108887
+        ],
+        "evidence_chunk_ids": [
+          7,
+          2,
+          4,
+          3,
+          8
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 11936.132399998314,
+        "status": "answered",
+        "grounding": "uncited",
+        "answer": "The return type of `compute_backoff` is `float`.\n\n**Insufficient evidence**:\nThe code does not explicitly state the return type of `compute_backoff`. The function signature only mentions that it returns a `float`, but there is no explicit type annotation or documentation that confirms this.",
+        "raw_answer": "The return type of `compute_backoff` is `float`.\n\n**Insufficient evidence**:\nThe code does not explicitly state the return type of `compute_backoff`. The function signature only mentions that it returns a `float`, but there is no explicit type annotation or documentation that confirms this.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q08-retry-params",
+      "category": "signature_defaults",
+      "text": "What are the parameters of should_retry and their default values?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        8,
+        3
+      ],
+      "retrieval": {
+        "retrieval_ms": 361.63399999350077,
+        "ranked_chunk_ids": [
+          3,
+          8,
+          4,
+          2,
+          7
+        ],
+        "ranked_scores": [
+          3.003182888031006,
+          -0.03500555455684662,
+          -0.6727261543273926,
+          -2.8211915493011475,
+          -6.098803520202637
+        ],
+        "evidence_chunk_ids": [
+          3,
+          8,
+          4,
+          2,
+          7
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 18380.833100003656,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence provided does not directly state the parameters of `should_retry` and their default values. The code snippet only defines the function signature and parameter defaults, but does not provide any information about the parameters or their default values. Therefore, the question cannot be answered based solely on the given evidence.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 1,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q09-retry-ret",
+      "category": "signature_defaults",
+      "text": "What is the return type of should_retry?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        8
+      ],
+      "retrieval": {
+        "retrieval_ms": 316.0319999951753,
+        "ranked_chunk_ids": [
+          3,
+          8,
+          4,
+          7,
+          2
+        ],
+        "ranked_scores": [
+          4.793357849121094,
+          3.7478818893432617,
+          0.8340166807174683,
+          -2.633924722671509,
+          -3.9456112384796143
+        ],
+        "evidence_chunk_ids": [
+          3,
+          8,
+          4,
+          7,
+          2
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.5
+      },
+      "ask": {
+        "total_ms": 9953.84219999687,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state the return type of `should_retry`.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state the return type of `should_retry`.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q10-retry-cond",
+      "category": "behavior_logic",
+      "text": "Under what condition does should_retry return True?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        8,
+        3
+      ],
+      "retrieval": {
+        "retrieval_ms": 309.14270000357646,
+        "ranked_chunk_ids": [
+          3,
+          8,
+          4,
+          7,
+          2
+        ],
+        "ranked_scores": [
+          5.437806606292725,
+          3.888596296310425,
+          -2.0745034217834473,
+          -5.090557098388672,
+          -6.335007667541504
+        ],
+        "evidence_chunk_ids": [
+          3,
+          8,
+          4,
+          7,
+          2
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 12455.238000002282,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state the condition under which `should_retry` returns `True`. The function checks if the `attempt` is non-negative and less than `max_attempts`, but it does not provide any information about the specific condition that determines whether `should_retry` returns `True` or `False`.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state the condition under which `should_retry` returns `True`. The function checks if the `attempt` is non-negative and less than `max_attempts`, but it does not provide any information about the specific condition that determines whether `should_retry` returns `True` or `False`.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q11-retry-exceeded",
+      "category": "behavior_logic",
+      "text": "What does should_retry return when attempt is equal to or greater than max_attempts?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        8,
+        3
+      ],
+      "retrieval": {
+        "retrieval_ms": 385.02759999391856,
+        "ranked_chunk_ids": [
+          3,
+          8,
+          4,
+          2,
+          7
+        ],
+        "ranked_scores": [
+          7.667945384979248,
+          5.963614463806152,
+          2.1279585361480713,
+          1.3574413061141968,
+          1.0689380168914795
+        ],
+        "evidence_chunk_ids": [
+          3,
+          8,
+          4,
+          2,
+          7
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 20955.07760000328,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence provided does not directly state the behavior of the `should_retry` function when `attempt` is equal to or greater than `max_attempts`. The code snippet provided only shows the function signature and a simple example of how it might be used, but does not include any logic to determine the return value under these conditions. Therefore, we cannot answer the question based solely on the given evidence.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence provided does not directly state the behavior of the `should_retry` function when `attempt` is equal to or greater than `max_attempts`. The code snippet provided only shows the function signature and a simple example of how it might be used, but does not include any logic to determine the return value under these conditions. Therefore, we cannot answer the question based solely on the given evidence.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q12-jitter-gen",
+      "category": "behavior_logic",
+      "text": "How does compute_backoff generate the random jitter added to the delay?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 329.4679999962682,
+        "ranked_chunk_ids": [
+          2,
+          7,
+          4,
+          6,
+          1
+        ],
+        "ranked_scores": [
+          6.605373382568359,
+          6.004604816436768,
+          0.6022125482559204,
+          -9.864614486694336,
+          -10.255128860473633
+        ],
+        "evidence_chunk_ids": [
+          2,
+          7,
+          4,
+          6,
+          1
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.5
+      },
+      "ask": {
+        "total_ms": 17294.90100000112,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence provided does not directly state how `compute_backoff` generates the random jitter added to the delay. The code snippet only shows the function signature and a simple example of how to use it. To determine how the jitter is generated, we would need to look at the implementation of the `random.uniform` function or any other random number generation function used in the code.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": true,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q13-unans-redis",
+      "category": "unanswerable_missing",
+      "text": "How do you configure a Redis connection string for the retry task queue?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 328.267799995956,
+        "ranked_chunk_ids": [
+          3,
+          2,
+          4,
+          5,
+          1
+        ],
+        "ranked_scores": [
+          0.5189669132232666,
+          0.2498304843902588,
+          -0.594132661819458,
+          -2.024996280670166,
+          -2.6767685413360596
+        ],
+        "evidence_chunk_ids": [
+          3,
+          2,
+          4,
+          5,
+          1
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 8340.031399995496,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence provided does not contain any information about how to configure a Redis connection string for the retry task queue.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence provided does not contain any information about how to configure a Redis connection string for the retry task queue.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 3,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 3,
+          "has_gold": false,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 2,
+          "has_gold": false,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q14-unans-db",
+      "category": "unanswerable_missing",
+      "text": "What SQLite table stores the execution history of failed tasks?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 411.7525000037858,
+        "ranked_chunk_ids": [
+          3,
+          5,
+          2,
+          4,
+          1
+        ],
+        "ranked_scores": [
+          -9.018885612487793,
+          -10.39366626739502,
+          -10.599639892578125,
+          -10.674233436584473,
+          -10.708198547363281
+        ],
+        "evidence_chunk_ids": [
+          3,
+          5,
+          2,
+          4,
+          1
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 9952.419299996109,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state any table that stores the execution history of failed tasks. The code provided demonstrates how to compute backoff delays and check if a task should be retried, but it does not specify any database or table structure for storing this information.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state any table that stores the execution history of failed tasks. The code provided demonstrates how to compute backoff delays and check if a task should be retried, but it does not specify any database or table structure for storing this information.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 1,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-2.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-1.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "0.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        }
+      }
+    },
+    {
+      "id": "q15-unans-threads",
+      "category": "unanswerable_missing",
+      "text": "How many worker threads are spawned by default to process tasks concurrently?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 320.59299999673385,
+        "ranked_chunk_ids": [
+          6,
+          4,
+          8,
+          7,
+          3
+        ],
+        "ranked_scores": [
+          -8.934866905212402,
+          -9.914916038513184,
+          -10.779136657714844,
+          -10.965019226074219,
+          -10.998106956481934
+        ],
+        "evidence_chunk_ids": [
+          6,
+          4,
+          8,
+          7,
+          3
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 16340.537700001732,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly provide information about the number of worker threads spawned by default to process tasks concurrently. The code snippet provided does not contain any information about worker threads or concurrency.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 2,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-2.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-1.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "0.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        }
+      }
+    },
+    {
+      "id": "q16-unans-webhook",
+      "category": "unanswerable_missing",
+      "text": "What HTTP status code does the retry webhook endpoint return upon timeout?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 331.1133000024711,
+        "ranked_chunk_ids": [
+          3,
+          4,
+          2,
+          8,
+          5
+        ],
+        "ranked_scores": [
+          -2.908036470413208,
+          -5.6755523681640625,
+          -5.834387302398682,
+          -5.998344898223877,
+          -6.0437726974487305
+        ],
+        "evidence_chunk_ids": [
+          3,
+          4,
+          2,
+          8,
+          5
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 9085.940799996024,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state the HTTP status code returned by the retry webhook endpoint upon timeout.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state the HTTP status code returned by the retry webhook endpoint upon timeout.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 1,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-1.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "0.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        }
+      }
+    },
+    {
+      "id": "q17-fp-retry-all",
+      "category": "false_premise",
+      "text": "What arguments does the retry_all() function accept to retry failed tasks?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 375.69059999805177,
+        "ranked_chunk_ids": [
+          3,
+          2,
+          4,
+          8,
+          1
+        ],
+        "ranked_scores": [
+          3.7279038429260254,
+          0.7790595293045044,
+          -0.870254635810852,
+          -1.3143022060394287,
+          -1.5093878507614136
+        ],
+        "evidence_chunk_ids": [
+          3,
+          2,
+          4,
+          8,
+          1
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 9103.893799998332,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state the arguments that the `retry_all()` function accepts to retry failed tasks.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state the arguments that the `retry_all()` function accepts to retry failed tasks.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 3,
+          "has_gold": false,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 2,
+          "has_gold": false,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q18-fp-neg-attempt",
+      "category": "false_premise",
+      "text": "How does compute_backoff handle negative attempt values without raising an error?",
+      "is_answerable": false,
+      "gold_chunk_ids": [
+        2,
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 338.29310000146506,
+        "ranked_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "ranked_scores": [
+          5.747671604156494,
+          5.300226211547852,
+          -2.0777361392974854,
+          -2.930091381072998,
+          -7.830855369567871
+        ],
+        "evidence_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 19976.00219999731,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly support an answer to the question \"How does compute_backoff handle negative attempt values without raising an error? \" The code does not contain any logic to handle negative attempt values or negative delay values. The function `compute_backoff` raises a `ValueError` if the `attempt` is negative, which is the only way to handle negative attempt values according to the code.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 2,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "q19-fp-decorator",
+      "category": "false_premise",
+      "text": "What is the name of the decorator used to automatically retry async def functions?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 334.30500000395114,
+        "ranked_chunk_ids": [
+          3,
+          8,
+          2,
+          5,
+          1
+        ],
+        "ranked_scores": [
+          -5.410357475280762,
+          -6.667090892791748,
+          -6.727590084075928,
+          -7.024258613586426,
+          -8.005194664001465
+        ],
+        "evidence_chunk_ids": [
+          3,
+          8,
+          2,
+          5,
+          1
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 8851.066499999433,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence does not directly state the name of the decorator used to automatically retry async def functions.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence does not directly state the name of the decorator used to automatically retry async def functions.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-2.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-1.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "0.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        }
+      }
+    },
+    {
+      "id": "q20-fp-max-delay",
+      "category": "false_premise",
+      "text": "How do you set a maximum delay cap in seconds for compute_backoff using the max_delay parameter?",
+      "is_answerable": false,
+      "gold_chunk_ids": [
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 352.00260000419803,
+        "ranked_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "ranked_scores": [
+          5.417548179626465,
+          4.559381484985352,
+          1.3858389854431152,
+          -6.239123344421387,
+          -6.923545837402344
+        ],
+        "evidence_chunk_ids": [
+          2,
+          7,
+          4,
+          3,
+          8
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 0.5
+      },
+      "ask": {
+        "total_ms": 12102.775400002429,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "answer": "The available evidence is insufficient to answer this question.\n\nModel note: The evidence provided does not directly state how to set a maximum delay cap in seconds for compute_backoff using the max_delay parameter. The code snippet only defines the function `compute_backoff` and does not include any configuration or settings for the maximum delay.",
+        "raw_answer": "INSUFFICIENT_EVIDENCE\n\nThe evidence provided does not directly state how to set a maximum delay cap in seconds for compute_backoff using the max_delay parameter. The code snippet only defines the function `compute_backoff` and does not include any configuration or settings for the maximum delay.",
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 3,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    }
+  ]
+}

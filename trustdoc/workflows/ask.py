@@ -39,7 +39,13 @@ from trustdoc.llm.factory import create_llm
 from trustdoc.logging_setup import get_logger
 from trustdoc.retrieval.types import SearchResult
 from trustdoc.workflows.citations import analyze_citations
-from trustdoc.workflows.prompts import INSUFFICIENT_SENTINEL, PromptBundle, build_prompt
+from trustdoc.workflows.code_facts import CodeFactResolver
+from trustdoc.workflows.prompts import (
+    CORRECTIVE_RETRY_INSTRUCTIONS,
+    INSUFFICIENT_SENTINEL,
+    PromptBundle,
+    build_prompt,
+)
 from trustdoc.workflows.types import (
     AskCitation,
     AskEvidence,
@@ -58,6 +64,39 @@ PLACEHOLDER_THRESHOLD_WARNING = (
 )
 _SENTINEL_RE = re.compile(rf"^\s*{INSUFFICIENT_SENTINEL.replace('_', '[_ ]')}\b[\s:.\-]*", re.IGNORECASE)
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+_ABSENCE_TERMS_RE = re.compile(
+    r"\b(?:not|never|neither|nor|no|none|nothing|cannot|can't|missing|absent|lacks?|lacking|unsupported|unmentioned|insufficient|without)\b",
+    re.IGNORECASE,
+)
+_CONTRAST_ANSWER_RE = re.compile(
+    r"\b(?:however|nevertheless|nonetheless|although|though|but)\b(?![^.!?]*\b(?:not|never|neither|no|without)\b)[^.!?]*\b(?:states?|shows?|specif(?:y|ies)|indicates?|returns?|defines?)\b",
+    re.IGNORECASE,
+)
+_AFFIRMATIVE_FACT_RE = re.compile(
+    r"\b(?:returns?\s+(?:True|False|float|int|str|bool|None|\d+)|return\s+type\s+is|raises?\s+[A-Z]\w+Error|defaults?\s+to|default\s+values?|is\s+defined\s+(?:to|as)|formula\s+is|delay\s+is|imports?\s+(?:the\s+)?\w+)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_contradictory_abstention(raw: str) -> bool:
+    """Check if a response beginning with INSUFFICIENT_EVIDENCE contains substantive answer text."""
+    m = _SENTINEL_RE.match(raw)
+    if not m:
+        return False
+    note = raw[m.end():].strip()
+    if not note:
+        return False
+    if "```" in note:
+        return True
+    if _CONTRAST_ANSWER_RE.search(note):
+        return True
+    if _AFFIRMATIVE_FACT_RE.search(note):
+        return True
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+|\n+", note) if s.strip()]
+    for s in sentences:
+        if not _ABSENCE_TERMS_RE.search(s):
+            return True
+    return False
 
 LLMSource = Union[LLMBackend, Callable[[], LLMBackend], None]
 
@@ -93,6 +132,7 @@ class AskService:
         self._retriever = retriever
         self._llm_source = llm
         self._llm: LLMBackend | None = llm if isinstance(llm, LLMBackend) else None
+        self._code_facts = CodeFactResolver(self._db)
 
     # ------------------------------------------------------------------ public
     def ask(self, project_id: int, question: str, *, top_k: int | None = None) -> AskResult:
@@ -100,6 +140,13 @@ class AskService:
         question = self._validate_question(question)
         with self._db.session() as s:
             s.projects.require(project_id)
+
+        # ---- 0. deterministic code-fact resolution
+        fact_res = self._code_facts.resolve(project_id, question)
+        if fact_res is not None:
+            log.info("Ask project=%d answered deterministically (code facts)", project_id)
+            return fact_res
+
         cfg = self._settings.ask
         k = cfg.max_evidence_items if top_k is None else top_k
         if k <= 0:
@@ -110,7 +157,10 @@ class AskService:
         # ---- 1. retrieval (Part 3 owns all of it)
         t = time.perf_counter()
         try:
-            found = self._retriever.search(project_id, question, top_k=k)
+            search_kwargs: dict[str, object] = {"top_k": k}
+            if cfg.relevance_threshold is not None:
+                search_kwargs["threshold"] = cfg.relevance_threshold
+            found = self._retriever.search(project_id, question, **search_kwargs)
         except (RetrievalError, MissingDependencyError) as exc:
             log.warning("Retrieval failed for project %d: %s", project_id, exc)
             return AskResult(
@@ -191,18 +241,77 @@ class AskService:
         elif generation.finish_reason == "time_limit":
             warnings.append("Generation stopped at the time limit; the answer may be incomplete.")
 
-        # ---- 5. model-declared insufficiency
+        # ---- 5. model-declared insufficiency & contradictory output handling
         declared = _SENTINEL_RE.match(raw)
         if declared:
-            note = raw[declared.end():].strip()
-            analysis = analyze_citations(note, {i.id for i in bundle.items}) if note else None
-            answer = INSUFFICIENT_MESSAGE + (f"\n\nModel note: {analysis.sanitized_text}" if analysis else "")
-            return result(
-                AskStatus.INSUFFICIENT_EVIDENCE, answer, abstained=True,
-                abstention_reason="model_declared_insufficient", raw_answer=raw,
-                citations=_citations(analysis, bundle) if analysis else [],
-                invalid_citation_ids=analysis.invalid_ids if analysis else [], **model_info,
-            )
+            if _is_contradictory_abstention(raw):
+                # Malformed output: begins with INSUFFICIENT_EVIDENCE but contains substantive answer text.
+                # Perform at most one bounded corrective retry using the same retrieved evidence.
+                log.warning("Contradictory output detected for project %d; retrying once with corrective prompt", project_id)
+                warnings.append(
+                    "The initial response was contradictory (began with INSUFFICIENT_EVIDENCE but contained answer statements); performed a corrective retry."
+                )
+                retry_user_prompt = f"{bundle.user_prompt}\n\nCORRECTIVE INSTRUCTION:\n{CORRECTIVE_RETRY_INSTRUCTIONS}"
+                t_retry = time.perf_counter()
+                try:
+                    retry_gen = llm.generate(prompt=retry_user_prompt, system_prompt=bundle.system_prompt)
+                    timings["retry_generation_ms"] = _ms(t_retry)
+                    retry_raw = _CONTROL.sub("", retry_gen.text or "").strip()
+                except Exception as exc:  # noqa: BLE001
+                    kind = classify_llm_error(exc)
+                    log.warning("Corrective retry LLM failure (%s): %s", kind, exc)
+                    timings["retry_generation_ms"] = _ms(t_retry)
+                    warnings.append(f"Corrective retry failed ({kind}); abstaining safely.")
+                    return result(
+                        AskStatus.INSUFFICIENT_EVIDENCE, INSUFFICIENT_MESSAGE, abstained=True,
+                        abstention_reason="corrective_retry_failed", raw_answer=raw,
+                        **model_info,
+                    )
+
+                if not retry_raw:
+                    warnings.append("Corrective retry returned an empty answer; abstaining safely.")
+                    return result(
+                        AskStatus.INSUFFICIENT_EVIDENCE, INSUFFICIENT_MESSAGE, abstained=True,
+                        abstention_reason="corrective_retry_empty", raw_answer=raw,
+                        **model_info,
+                    )
+
+                retry_declared = _SENTINEL_RE.match(retry_raw)
+                if retry_declared:
+                    if _is_contradictory_abstention(retry_raw):
+                        # Still contradictory after retry: safe abstention with diagnostic warning
+                        warnings.append("Response remained contradictory after corrective retry; abstaining safely.")
+                        return result(
+                            AskStatus.INSUFFICIENT_EVIDENCE, INSUFFICIENT_MESSAGE, abstained=True,
+                            abstention_reason="contradictory_output_unresolved", raw_answer=retry_raw,
+                            **model_info,
+                        )
+                    else:
+                        # Genuine clean abstention after retry
+                        note = retry_raw[retry_declared.end():].strip()
+                        analysis = analyze_citations(note, {i.id for i in bundle.items}) if note else None
+                        answer = INSUFFICIENT_MESSAGE + (f"\n\nModel note: {analysis.sanitized_text}" if analysis else "")
+                        return result(
+                            AskStatus.INSUFFICIENT_EVIDENCE, answer, abstained=True,
+                            abstention_reason="model_declared_insufficient", raw_answer=retry_raw,
+                            citations=_citations(analysis, bundle) if analysis else [],
+                            invalid_citation_ids=analysis.invalid_ids if analysis else [], **model_info,
+                        )
+
+                # Retry produced an answer without sentinel!
+                raw = retry_raw
+                model_info["finish_reason"] = retry_gen.finish_reason
+            else:
+                # Genuine clean abstention on initial generation
+                note = raw[declared.end():].strip()
+                analysis = analyze_citations(note, {i.id for i in bundle.items}) if note else None
+                answer = INSUFFICIENT_MESSAGE + (f"\n\nModel note: {analysis.sanitized_text}" if analysis else "")
+                return result(
+                    AskStatus.INSUFFICIENT_EVIDENCE, answer, abstained=True,
+                    abstention_reason="model_declared_insufficient", raw_answer=raw,
+                    citations=_citations(analysis, bundle) if analysis else [],
+                    invalid_citation_ids=analysis.invalid_ids if analysis else [], **model_info,
+                )
 
         # ---- 6. citation validation (deterministic; not claim verification)
         analysis = analyze_citations(raw, {i.id for i in bundle.items})

@@ -1,0 +1,203 @@
+{
+  "name": "retry-task-queue-eval-v1",
+  "description": "Evaluation dataset of 20 queries against the canonical retry-task-queue project (workers.py and READme.md). Covers factual explicit questions, signature and default questions, behavioral/logic questions, unanswerable queries on missing features, and false-premise queries.",
+  "project_name": "retry-task-queue",
+  "queries": [
+    {
+      "id": "q01-dep",
+      "category": "factual_explicit",
+      "text": "What external dependencies does the retry-task-queue project require?",
+      "is_answerable": true,
+      "expected_answer": "The project requires only the Python standard library (no external dependencies).",
+      "relevant": [
+        {"source": "READme.md", "heading": "Retry Task Queue > Dependencies"}
+      ]
+    },
+    {
+      "id": "q02-formula",
+      "category": "factual_explicit",
+      "text": "What is the mathematical formula used to calculate the retry delay in compute_backoff?",
+      "is_answerable": true,
+      "expected_answer": "base_seconds * (2 ** attempt) plus a random value between 0.0 and jitter.",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `compute_backoff(attempt, base_seconds=0.5, jitter=0.1)`"}
+      ]
+    },
+    {
+      "id": "q03-err-attempt",
+      "category": "factual_explicit",
+      "text": "What exception is raised if attempt is negative in compute_backoff?",
+      "is_answerable": true,
+      "expected_answer": "ValueError('attempt must be non-negative')",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `compute_backoff(attempt, base_seconds=0.5, jitter=0.1)`"}
+      ]
+    },
+    {
+      "id": "q04-err-delay",
+      "category": "factual_explicit",
+      "text": "What exception is raised if base_seconds or jitter is negative in compute_backoff?",
+      "is_answerable": true,
+      "expected_answer": "ValueError('delays must be non-negative')",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `compute_backoff(attempt, base_seconds=0.5, jitter=0.1)`"}
+      ]
+    },
+    {
+      "id": "q05-import",
+      "category": "factual_explicit",
+      "text": "Which standard library module does workers.py import?",
+      "is_answerable": true,
+      "expected_answer": "random",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers"}
+      ]
+    },
+    {
+      "id": "q06-backoff-defaults",
+      "category": "signature_defaults",
+      "text": "What are the default values for base_seconds and jitter in compute_backoff?",
+      "is_answerable": true,
+      "expected_answer": "base_seconds defaults to 0.5 and jitter defaults to 0.1.",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `compute_backoff(attempt, base_seconds=0.5, jitter=0.1)`"}
+      ]
+    },
+    {
+      "id": "q07-backoff-ret",
+      "category": "signature_defaults",
+      "text": "What is the return type of compute_backoff?",
+      "is_answerable": true,
+      "expected_answer": "float (calculated retry delay in seconds).",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"}
+      ]
+    },
+    {
+      "id": "q08-retry-params",
+      "category": "signature_defaults",
+      "text": "What are the parameters of should_retry and their default values?",
+      "is_answerable": true,
+      "expected_answer": "attempt (int, no default) and max_attempts (int, default=3).",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.should_retry"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `should_retry(attempt, max_attempts=3)`"}
+      ]
+    },
+    {
+      "id": "q09-retry-ret",
+      "category": "signature_defaults",
+      "text": "What is the return type of should_retry?",
+      "is_answerable": true,
+      "expected_answer": "bool",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.should_retry"}
+      ]
+    },
+    {
+      "id": "q10-retry-cond",
+      "category": "behavior_logic",
+      "text": "Under what condition does should_retry return True?",
+      "is_answerable": true,
+      "expected_answer": "When 0 <= attempt < max_attempts (attempt is non-negative and less than max_attempts).",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.should_retry"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `should_retry(attempt, max_attempts=3)`"}
+      ]
+    },
+    {
+      "id": "q11-retry-exceeded",
+      "category": "behavior_logic",
+      "text": "What does should_retry return when attempt is equal to or greater than max_attempts?",
+      "is_answerable": true,
+      "expected_answer": "False",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.should_retry"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `should_retry(attempt, max_attempts=3)`"}
+      ]
+    },
+    {
+      "id": "q12-jitter-gen",
+      "category": "behavior_logic",
+      "text": "How does compute_backoff generate the random jitter added to the delay?",
+      "is_answerable": true,
+      "expected_answer": "random.uniform(0.0, jitter)",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"}
+      ]
+    },
+    {
+      "id": "q13-unans-redis",
+      "category": "unanswerable_missing",
+      "text": "How do you configure a Redis connection string for the retry task queue?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (Redis is not used in this project).",
+      "relevant": []
+    },
+    {
+      "id": "q14-unans-db",
+      "category": "unanswerable_missing",
+      "text": "What SQLite table stores the execution history of failed tasks?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (no database or task history storage is implemented).",
+      "relevant": []
+    },
+    {
+      "id": "q15-unans-threads",
+      "category": "unanswerable_missing",
+      "text": "How many worker threads are spawned by default to process tasks concurrently?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (no threading, concurrency, or worker pool exists in this project).",
+      "relevant": []
+    },
+    {
+      "id": "q16-unans-webhook",
+      "category": "unanswerable_missing",
+      "text": "What HTTP status code does the retry webhook endpoint return upon timeout?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (no HTTP endpoints or webhooks exist in this project).",
+      "relevant": []
+    },
+    {
+      "id": "q17-fp-retry-all",
+      "category": "false_premise",
+      "text": "What arguments does the retry_all() function accept to retry failed tasks?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (false premise: no function named retry_all exists in the project).",
+      "relevant": []
+    },
+    {
+      "id": "q18-fp-neg-attempt",
+      "category": "false_premise",
+      "text": "How does compute_backoff handle negative attempt values without raising an error?",
+      "is_answerable": false,
+      "expected_answer": "Contradicts premise: compute_backoff raises ValueError('attempt must be non-negative') on negative attempt values.",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"},
+        {"source": "READme.md", "heading": "Retry Task Queue > Functions > `compute_backoff(attempt, base_seconds=0.5, jitter=0.1)`"}
+      ]
+    },
+    {
+      "id": "q19-fp-decorator",
+      "category": "false_premise",
+      "text": "What is the name of the decorator used to automatically retry async def functions?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (false premise: no retry decorators or async functions exist in this project).",
+      "relevant": []
+    },
+    {
+      "id": "q20-fp-max-delay",
+      "category": "false_premise",
+      "text": "How do you set a maximum delay cap in seconds for compute_backoff using the max_delay parameter?",
+      "is_answerable": false,
+      "expected_answer": "Abstain / Insufficient evidence (false premise: compute_backoff does not have a max_delay parameter).",
+      "relevant": [
+        {"source": "workers.py", "qualified_name": "workers.compute_backoff"}
+      ]
+    }
+  ]
+}

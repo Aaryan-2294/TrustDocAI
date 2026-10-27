@@ -291,3 +291,130 @@ def test_to_dict_is_json_safe_and_hides_evidence_text_by_default(project_id, evi
     assert data["status"] == "answered" and data["grounding"] == "cited" and data["claims_verified"] is False
     assert "return 2 ** attempt" not in json.dumps(data) and "text" not in data["evidence"][0]
     assert "return 2 ** attempt" in json.dumps(r.to_dict(include_evidence_text=True))
+
+
+# ------------------------------------------------------------- contradictory output & corrective retry
+def test_answerable_code_question_normal_cited_answer(project_id, evidence, make_service):
+    """1. Answerable Python code question where model returns normal cited answer without retry."""
+    llm = ScriptedLLM("compute_backoff computes 2 ** attempt [E1].")
+    service, _ = make_service(make_search_result(evidence, project_id=project_id), llm)
+    for e in evidence:
+        e.project_id = project_id
+    r = service.ask(project_id, "How does compute_backoff work?")
+    assert r.status == AskStatus.ANSWERED
+    assert r.grounding == GroundingLevel.CITED
+    assert [c.id for c in r.citations] == ["E1"]
+    assert len(llm.calls) == 1
+    assert "retry_generation_ms" not in r.timings_ms
+
+
+def test_contradictory_response_triggers_single_corrective_retry(project_id, evidence, make_service):
+    """2. Model response beginning with INSUFFICIENT_EVIDENCE followed by answer triggers exactly 1 retry."""
+    replies = [
+        "INSUFFICIENT_EVIDENCE\ncompute_backoff calculates delay as 2 ** attempt [E1].",
+        "The delay is calculated as 2 ** attempt [E1].",
+    ]
+    llm = ScriptedLLM(replies)
+    service, _ = make_service(make_search_result(evidence, project_id=project_id), llm)
+    for e in evidence:
+        e.project_id = project_id
+    r = service.ask(project_id, "What is the formula?")
+    assert r.status == AskStatus.ANSWERED
+    assert r.grounding == GroundingLevel.CITED
+    assert r.answer == "The delay is calculated as 2 ** attempt [E1]."
+    assert len(llm.calls) == 2
+    assert "CORRECTIVE INSTRUCTION:" in llm.calls[1]["prompt"]
+    assert any("contradictory" in w for w in r.warnings)
+    assert "retry_generation_ms" in r.timings_ms
+
+
+def test_genuine_standalone_insufficient_evidence_does_not_retry(project_id, evidence, make_service):
+    """3. Genuine standalone INSUFFICIENT_EVIDENCE response remains clean abstention without retry."""
+    llm = ScriptedLLM("INSUFFICIENT_EVIDENCE")
+    service, _ = make_service(make_search_result(evidence, project_id=project_id), llm)
+    for e in evidence:
+        e.project_id = project_id
+    r = service.ask(project_id, "What is the Redis host?")
+    assert r.status == AskStatus.INSUFFICIENT_EVIDENCE
+    assert r.abstained is True
+    assert r.abstention_reason == "model_declared_insufficient"
+    assert len(llm.calls) == 1  # No retry made!
+
+
+def test_genuine_missing_evidence_note_does_not_retry(project_id, evidence, make_service):
+    """3b. Genuine missing-evidence explanation remains clean abstention without retry."""
+    llm = ScriptedLLM("INSUFFICIENT_EVIDENCE\nThe evidence does not mention any Redis connection settings.")
+    service, _ = make_service(make_search_result(evidence, project_id=project_id), llm)
+    for e in evidence:
+        e.project_id = project_id
+    r = service.ask(project_id, "What is the Redis host?")
+    assert r.status == AskStatus.INSUFFICIENT_EVIDENCE
+    assert r.abstained is True
+    assert r.abstention_reason == "model_declared_insufficient"
+    assert "does not mention any Redis" in r.answer
+    assert len(llm.calls) == 1  # No retry made!
+
+
+def test_response_remains_contradictory_after_retry_abstains_safely(project_id, evidence, make_service):
+    """4. Response that remains malformed/contradictory after retry falls back to safe abstention."""
+    replies = [
+        "INSUFFICIENT_EVIDENCE\ncompute_backoff calculates delay [E1].",
+        "INSUFFICIENT_EVIDENCE\nThe function compute_backoff is defined to return 2 ** attempt [E1].",
+    ]
+    llm = ScriptedLLM(replies)
+    service, _ = make_service(make_search_result(evidence, project_id=project_id), llm)
+    for e in evidence:
+        e.project_id = project_id
+    r = service.ask(project_id, "How does compute_backoff work?")
+    assert r.status == AskStatus.INSUFFICIENT_EVIDENCE
+    assert r.abstained is True
+    assert r.abstention_reason == "contradictory_output_unresolved"
+    assert len(llm.calls) == 2  # Bounded to exactly 1 retry!
+    assert any("remained contradictory" in w for w in r.warnings)
+
+
+def test_fabricated_citations_in_initial_and_corrected_responses(project_id, evidence, make_service):
+    """5. Fabricated citation handling across initial contradictory and retry responses."""
+    replies = [
+        "INSUFFICIENT_EVIDENCE\nBackoff is 2 ** attempt [E99].",
+        "Retries use 2 ** attempt [E1] and [E99].",
+    ]
+    llm = ScriptedLLM(replies)
+    service, _ = make_service(make_search_result(evidence, project_id=project_id), llm)
+    for e in evidence:
+        e.project_id = project_id
+    r = service.ask(project_id, "What is the formula?")
+    assert r.status == AskStatus.ANSWERED
+    assert r.grounding == GroundingLevel.CITED_WITH_INVALID_REFERENCES
+    assert r.invalid_citation_ids == ["E99"]
+    assert [c.id for c in r.citations] == ["E1"]
+    assert "unknown source E99" in r.answer
+
+
+def test_retry_uses_original_evidence_without_adding_model_output(project_id, evidence, make_service):
+    """6. Retry uses original evidence without adding model output as evidence."""
+    replies = [
+        "INSUFFICIENT_EVIDENCE\nModel generated text claiming X [E1].",
+        "Verified answer [E1].",
+    ]
+    llm = ScriptedLLM(replies)
+    service, _ = make_service(make_search_result(evidence, project_id=project_id), llm)
+    for e in evidence:
+        e.project_id = project_id
+    service.ask(project_id, "Explain X")
+    assert len(llm.calls) == 2
+    prompt_retry = llm.calls[1]["prompt"]
+    assert "=== BEGIN EVIDENCE E1" in prompt_retry
+    assert "=== BEGIN EVIDENCE E2" in prompt_retry
+    assert "=== BEGIN EVIDENCE E3" not in prompt_retry
+    assert "Model generated text claiming X" not in prompt_retry.split("INSTRUCTIONS:")[0]
+
+
+def test_workflow_level_ask_relevance_threshold_override(db, settings, project_id, evidence, make_service):
+    """Workflow-level AskConfig.relevance_threshold overrides global retrieval threshold."""
+    cfg = settings_with(settings, ASK_RELEVANCE_THRESHOLD=2.5)
+    assert cfg.ask.relevance_threshold == 2.5
+    llm = ScriptedLLM("Answer [E1].")
+    service, retriever = make_service(make_search_result(evidence, project_id=project_id), llm, cfg)
+    service.ask(project_id, "q")
+    assert len(retriever.calls) == 1

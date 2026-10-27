@@ -131,15 +131,23 @@ def render_trust_score_card(score: ScoreReport | float | None) -> None:
         if score.components:
             breakdown = []
             for comp in score.components:
-                breakdown.append(
-                    f"- **{comp.name.capitalize()}**: `{comp.raw_score * 100:.1f}%` (weight: `{comp.weight:.2f}`, contribution: `{comp.contribution:+.1f} pts`)"
-                )
+                if comp.name == "severity_penalty":
+                    breakdown.append(
+                        f"- **Severity Penalty**: `{comp.contribution:+.1f} pts` ({comp.detail})"
+                    )
+                else:
+                    breakdown.append(
+                        f"- **{comp.name.capitalize()}**: `{comp.raw_score * 100:.1f}%` (weight: `{comp.weight:.2f}`, contribution: `{comp.contribution:+.1f} pts`)"
+                    )
             c2.markdown("\n".join(breakdown))
 
         if score.penalties:
             c2.markdown("**Contradiction Penalties Applied:**")
             for pen in score.penalties:
-                c2.markdown(f"- ⚠️ `{pen.get('label', 'Penalty')}`: `-{pen.get('penalty', 0):.1f} pts` ({pen.get('detail', '')})")
+                pts = float(pen.get("penalty", pen.get("count", 0) * pen.get("points_each", 0.0)))
+                label = pen.get("label") or f"{pen.get('severity', 'Contradiction').capitalize()} Findings"
+                detail = pen.get("detail") or f"{pen.get('count', 0)} finding(s) x {pen.get('points_each', 0):g} pts"
+                c2.markdown(f"- ⚠️ `{label}`: `-{pts:.1f} pts` ({detail})")
 
     render_heuristic_disclaimer()
 

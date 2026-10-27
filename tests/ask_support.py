@@ -81,23 +81,35 @@ class FakeRetriever:
 
 
 class ScriptedLLM(LLMBackend):
-    """Returns canned text (or raises) and records prompts."""
+    """Returns canned text (or raises) and records prompts. Supports a list of sequential replies."""
 
     name = "scripted"
     is_stub = False
 
-    def __init__(self, reply: str | Exception = "Answer [E1].", *, finish_reason: str | None = "stop") -> None:
+    def __init__(
+        self,
+        reply: str | Exception | list[str | Exception] | tuple[str | Exception, ...] = "Answer [E1].",
+        *,
+        finish_reason: str | None = "stop",
+    ) -> None:
         super().__init__("scripted-model")
+        self._replies = list(reply) if isinstance(reply, (list, tuple)) else None
         self.reply = reply
         self.finish_reason = finish_reason
         self.calls: list[dict] = []
 
     def generate(self, prompt, system_prompt=None, *, max_tokens=None, temperature=None):
         self.calls.append({"prompt": prompt, "system_prompt": system_prompt})
-        if isinstance(self.reply, Exception):
-            raise self.reply
+        if self._replies is not None:
+            if not self._replies:
+                raise RuntimeError("ScriptedLLM ran out of canned replies")
+            current = self._replies.pop(0)
+        else:
+            current = self.reply
+        if isinstance(current, Exception):
+            raise current
         return GenerationResult(
-            text=self.reply, model=self.model_name, backend=self.name, finish_reason=self.finish_reason,
+            text=current, model=self.model_name, backend=self.name, finish_reason=self.finish_reason,
         )
 
 

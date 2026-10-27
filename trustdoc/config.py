@@ -79,6 +79,7 @@ class AskConfig:
     max_evidence_items: int = 5       # evidence chunks placed in the prompt (also the retrieval top_k)
     max_evidence_chars: int = 6000    # total characters of evidence text in the prompt
     max_question_chars: int = 2000    # longer questions are rejected, never truncated
+    relevance_threshold: float | None = None  # None falls back to retrieval.relevance_threshold
 
 
 @dataclass(frozen=True)
@@ -197,6 +198,12 @@ class Settings:
         )
 
         a = AskConfig()
+        ask_thr_raw = get("ASK_RELEVANCE_THRESHOLD", None)
+        ask_relevance_threshold = (
+            _as_float(ask_thr_raw, "ASK_RELEVANCE_THRESHOLD")
+            if ask_thr_raw is not None
+            else a.relevance_threshold
+        )
         ask = AskConfig(
             max_evidence_items=_as_int(
                 get("ASK_MAX_EVIDENCE_ITEMS", a.max_evidence_items), "ASK_MAX_EVIDENCE_ITEMS"),
@@ -204,6 +211,7 @@ class Settings:
                 get("ASK_MAX_EVIDENCE_CHARS", a.max_evidence_chars), "ASK_MAX_EVIDENCE_CHARS"),
             max_question_chars=_as_int(
                 get("ASK_MAX_QUESTION_CHARS", a.max_question_chars), "ASK_MAX_QUESTION_CHARS"),
+            relevance_threshold=ask_relevance_threshold,
         )
 
         v = VerificationConfig()

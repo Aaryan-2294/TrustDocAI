@@ -1,0 +1,564 @@
+{
+  "summary": {
+    "dataset_name": "retry-task-queue-held-out-v1",
+    "total_queries": 5,
+    "answerable_count": 2,
+    "unanswerable_count": 3,
+    "retrieval": {
+      "recall_at_1": 50.0,
+      "recall_at_3": 50.0,
+      "recall_at_5": 50.0,
+      "mrr": 0.5
+    },
+    "score_distribution": {
+      "gold_scores": {
+        "count": 2,
+        "mean": 4.57,
+        "min": 4.34,
+        "max": 4.79
+      },
+      "negative_scores": {
+        "count": 23,
+        "mean": -1.16,
+        "min": -8.84,
+        "max": 6.73
+      }
+    },
+    "end_to_end_ask": {
+      "answerable_supported_count": 2,
+      "answerable_supported_pct": 100.0,
+      "answerable_deterministic_count": 2,
+      "answerable_llm_count": 0,
+      "false_abstentions_count": 0,
+      "false_abstentions_pct": 0.0,
+      "unanswerable_true_abstentions_count": 3,
+      "unanswerable_true_abstentions_pct": 100.0,
+      "unanswerable_hallucinations_count": 0,
+      "retrieval_filtered_unanswerable_count": 2,
+      "retrieval_filtered_total_count": 2,
+      "citation_validity_pct": 100.0
+    },
+    "threshold_tradeoff": {
+      "-15.0": {
+        "threshold": -15.0,
+        "answerable_gold_retained_pct": 50.0,
+        "unanswerable_abstention_pct": 0.0,
+        "false_positives": 3,
+        "false_negatives": 1
+      },
+      "-10.0": {
+        "threshold": -10.0,
+        "answerable_gold_retained_pct": 50.0,
+        "unanswerable_abstention_pct": 0.0,
+        "false_positives": 3,
+        "false_negatives": 1
+      },
+      "-5.0": {
+        "threshold": -5.0,
+        "answerable_gold_retained_pct": 50.0,
+        "unanswerable_abstention_pct": 33.3,
+        "false_positives": 2,
+        "false_negatives": 1
+      },
+      "-2.0": {
+        "threshold": -2.0,
+        "answerable_gold_retained_pct": 50.0,
+        "unanswerable_abstention_pct": 66.7,
+        "false_positives": 1,
+        "false_negatives": 1
+      },
+      "-1.0": {
+        "threshold": -1.0,
+        "answerable_gold_retained_pct": 50.0,
+        "unanswerable_abstention_pct": 66.7,
+        "false_positives": 1,
+        "false_negatives": 1
+      },
+      "0.0": {
+        "threshold": 0.0,
+        "answerable_gold_retained_pct": 50.0,
+        "unanswerable_abstention_pct": 66.7,
+        "false_positives": 1,
+        "false_negatives": 1
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "h01-jitter-default",
+      "category": "signature_defaults",
+      "text": "What is the default value of the jitter parameter in compute_backoff?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        2,
+        7
+      ],
+      "retrieval": {
+        "retrieval_ms": 23546.783899997536,
+        "ranked_chunk_ids": [
+          77,
+          82,
+          83,
+          78,
+          86
+        ],
+        "ranked_scores": [
+          6.732501983642578,
+          6.672300338745117,
+          6.5689697265625,
+          6.5624589920043945,
+          4.919349193572998
+        ],
+        "evidence_chunk_ids": [
+          77,
+          82,
+          83,
+          78,
+          86
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 11.709799997333903,
+        "status": "answered",
+        "grounding": "cited",
+        "backend": "deterministic",
+        "model_name": "deterministic_code_facts",
+        "abstained": false,
+        "abstention_reason": null,
+        "answer": "In workers.py (lines 5-26), the parameters of `compute_backoff` are: `attempt`: int, required (no default); `base_seconds`: float, default=0.5; `jitter`: float, default=0.1 [E1].",
+        "raw_answer": "In workers.py (lines 5-26), the parameters of `compute_backoff` are: `attempt`: int, required (no default); `base_seconds`: float, default=0.5; `jitter`: float, default=0.1 [E1].",
+        "citations": [
+          {
+            "id": "E1",
+            "label": "workers.py:5-26",
+            "source_name": "workers.py",
+            "source_type": "python",
+            "source_id": 2,
+            "chunk_id": 7,
+            "mentions": 1,
+            "start_line": 5,
+            "end_line": 26,
+            "page_number": null,
+            "heading": null,
+            "qualified_name": "workers.compute_backoff"
+          }
+        ],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": true,
+        "is_false_abstention": false,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "h02-max-attempts-annotation",
+      "category": "signature_defaults",
+      "text": "What is the type annotation of max_attempts in should_retry?",
+      "is_answerable": true,
+      "gold_chunk_ids": [
+        8,
+        3
+      ],
+      "retrieval": {
+        "retrieval_ms": 404.5083999953931,
+        "ranked_chunk_ids": [
+          3,
+          8,
+          4,
+          2,
+          83
+        ],
+        "ranked_scores": [
+          4.794014930725098,
+          4.340414524078369,
+          2.4604570865631104,
+          0.17213746905326843,
+          -0.28472211956977844
+        ],
+        "evidence_chunk_ids": [
+          3,
+          8,
+          4,
+          2,
+          83
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      "ask": {
+        "total_ms": 14.77379999414552,
+        "status": "answered",
+        "grounding": "cited",
+        "backend": "deterministic",
+        "model_name": "deterministic_code_facts",
+        "abstained": false,
+        "abstention_reason": null,
+        "answer": "In workers.py (lines 29-39), the type annotation of parameter `max_attempts` in `should_retry` is `int` (default: `3`) [E1].",
+        "raw_answer": "In workers.py (lines 29-39), the type annotation of parameter `max_attempts` in `should_retry` is `int` (default: `3`) [E1].",
+        "citations": [
+          {
+            "id": "E1",
+            "label": "workers.py:29-39",
+            "source_name": "workers.py",
+            "source_type": "python",
+            "source_id": 2,
+            "chunk_id": 8,
+            "mentions": 1,
+            "start_line": 29,
+            "end_line": 39,
+            "page_number": null,
+            "heading": null,
+            "qualified_name": "workers.should_retry"
+          }
+        ],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": true,
+        "is_false_abstention": false,
+        "is_true_abstention": false,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 5,
+          "has_gold": true,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 4,
+          "has_gold": true,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "h03-unans-celery",
+      "category": "unanswerable_missing",
+      "text": "How do you configure a Celery broker URL for the task queue?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 414.28089999681106,
+        "ranked_chunk_ids": [
+          3,
+          5,
+          4,
+          2,
+          1
+        ],
+        "ranked_scores": [
+          -7.787142753601074,
+          -8.04372787475586,
+          -8.243569374084473,
+          -8.691879272460938,
+          -8.835744857788086
+        ],
+        "evidence_chunk_ids": [
+          3,
+          5,
+          4,
+          2,
+          1
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 442.64660000044387,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "backend": null,
+        "model_name": null,
+        "abstained": true,
+        "abstention_reason": "below_relevance_threshold",
+        "answer": "The available evidence is insufficient to answer this question.",
+        "raw_answer": null,
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-2.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-1.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "0.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        }
+      }
+    },
+    {
+      "id": "h04-fp-timeout",
+      "category": "false_premise",
+      "text": "Does compute_backoff accept a timeout parameter?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 407.87799999816343,
+        "ranked_chunk_ids": [
+          77,
+          78,
+          82,
+          83,
+          86
+        ],
+        "ranked_scores": [
+          2.979966640472412,
+          2.7269835472106934,
+          2.682629108428955,
+          2.5939688682556152,
+          -0.11171668767929077
+        ],
+        "evidence_chunk_ids": [
+          77,
+          78,
+          82,
+          83,
+          86
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 13.54179999907501,
+        "status": "insufficient_evidence",
+        "grounding": "cited",
+        "backend": "deterministic",
+        "model_name": "deterministic_code_facts",
+        "abstained": true,
+        "abstention_reason": "parameter_not_indexed",
+        "answer": "In the indexed source `workers.py` (lines 5-26), `compute_backoff` does not have a `timeout` parameter. Its indexed parameters are: `attempt`, `base_seconds`, `jitter`. Therefore, the question's premise is unsupported by the indexed code [E1].",
+        "raw_answer": "In the indexed source `workers.py` (lines 5-26), `compute_backoff` does not have a `timeout` parameter. Its indexed parameters are: `attempt`, `base_seconds`, `jitter`. Therefore, the question's premise is unsupported by the indexed code [E1].",
+        "citations": [
+          {
+            "id": "E1",
+            "label": "workers.py:5-26",
+            "source_name": "workers.py",
+            "source_type": "python",
+            "source_id": 2,
+            "chunk_id": 7,
+            "mentions": 1,
+            "start_line": 5,
+            "end_line": 26,
+            "page_number": null,
+            "heading": null,
+            "qualified_name": "workers.compute_backoff"
+          }
+        ],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-1.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "0.0": {
+          "survived_count": 4,
+          "has_gold": false,
+          "abstained": false
+        }
+      }
+    },
+    {
+      "id": "h05-unans-kafka",
+      "category": "unanswerable_missing",
+      "text": "What Kafka topic is used for task queue events?",
+      "is_answerable": false,
+      "gold_chunk_ids": [],
+      "retrieval": {
+        "retrieval_ms": 390.17510000121547,
+        "ranked_chunk_ids": [
+          1,
+          5,
+          3,
+          4,
+          2
+        ],
+        "ranked_scores": [
+          -4.752063274383545,
+          -5.176728248596191,
+          -5.715324401855469,
+          -6.739126205444336,
+          -7.364821910858154
+        ],
+        "evidence_chunk_ids": [
+          1,
+          5,
+          3,
+          4,
+          2
+        ],
+        "recall_at_1": 0.0,
+        "recall_at_3": 0.0,
+        "recall_at_5": 0.0,
+        "reciprocal_rank": 0.0
+      },
+      "ask": {
+        "total_ms": 384.5002000016393,
+        "status": "insufficient_evidence",
+        "grounding": "none",
+        "backend": null,
+        "model_name": null,
+        "abstained": true,
+        "abstention_reason": "below_relevance_threshold",
+        "answer": "The available evidence is insufficient to answer this question.",
+        "raw_answer": null,
+        "citations": [],
+        "invalid_citation_ids": [],
+        "is_citation_valid": true,
+        "is_supported_answer": false,
+        "is_false_abstention": false,
+        "is_true_abstention": true,
+        "is_hallucination": false
+      },
+      "threshold_outcomes": {
+        "-15.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-10.0": {
+          "survived_count": 5,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-5.0": {
+          "survived_count": 1,
+          "has_gold": false,
+          "abstained": false
+        },
+        "-2.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "-1.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        },
+        "0.0": {
+          "survived_count": 0,
+          "has_gold": false,
+          "abstained": true
+        }
+      }
+    }
+  ]
+}
